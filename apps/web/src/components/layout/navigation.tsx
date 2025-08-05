@@ -3,7 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { HouseIcon, MessagesSquare, SearchIcon, UserRoundIcon } from 'lucide-react';
+import {
+  House as HouseIcon,
+  MessagesSquare,
+  Search as SearchIcon,
+  UserRound as UserRoundIcon,
+} from 'lucide-react';
 
 import { ROUTES, type NavMenuItem } from '@/lib/constants/routes';
 

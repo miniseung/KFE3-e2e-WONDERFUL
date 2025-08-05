@@ -2,9 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 
+import dynamic from 'next/dynamic';
 import { X } from 'lucide-react';
 
-import KakaoMap from '@/components/location/kakao-map';
+const KakaoMap = dynamic(() => import('@/components/location/kakao-map'), {
+  loading: () => (
+    <div className="flex h-[400px] w-full items-center justify-center rounded-lg bg-gray-100">
+      <div className="text-center">
+        <div className="border-primary-500 mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"></div>
+        <p className="text-gray-600">지도를 불러오는 중...</p>
+      </div>
+    </div>
+  ),
+  ssr: false,
+});
 import SearchInput from '@/components/location/search-input';
 import { Button } from '@/components/ui/button';
 

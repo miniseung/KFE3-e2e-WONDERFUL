@@ -2,14 +2,34 @@
 
 import { useEffect, useState } from 'react';
 
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from '@/components/ui/carousel';
+const Carousel = dynamic(
+  () => import('@/components/ui/carousel').then((mod) => ({ default: mod.Carousel })),
+  {
+    loading: () => (
+      <div className="flex h-[400px] w-full items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="border-primary-500 mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"></div>
+          <p className="text-gray-600">이미지를 불러오는 중...</p>
+        </div>
+      </div>
+    ),
+  }
+);
+
+const CarouselContent = dynamic(
+  () => import('@/components/ui/carousel').then((mod) => ({ default: mod.CarouselContent })),
+  { ssr: false }
+);
+
+const CarouselItem = dynamic(
+  () => import('@/components/ui/carousel').then((mod) => ({ default: mod.CarouselItem })),
+  { ssr: false }
+);
+
+import type { CarouselApi } from '@/components/ui/carousel';
 
 interface ItemImagesProps {
   urls: string[];

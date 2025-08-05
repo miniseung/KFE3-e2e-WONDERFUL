@@ -2,7 +2,25 @@
 
 import React, { useState, useEffect } from 'react';
 
-import { SignupKakaoMap } from '@/components/auth/signup';
+import dynamic from 'next/dynamic';
+
+const SignupKakaoMap = dynamic(
+  () => import('@/components/auth/signup').then((mod) => ({ default: mod.SignupKakaoMap })),
+  {
+    loading: () => (
+      <div
+        className="flex w-full items-center justify-center rounded-[10px] bg-white"
+        style={{ height: '130px' }}
+      >
+        <div className="text-center">
+          <div className="border-primary-500 mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-t-transparent"></div>
+          <p className="text-sm text-neutral-600">지도를 불러오는 중...</p>
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
 import { Button } from '@/components/ui/button';
 
 import { useGeolocation } from '@/hooks/common/useGeolocation';
