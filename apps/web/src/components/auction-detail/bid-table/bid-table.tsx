@@ -8,18 +8,23 @@ import { useQueryClient } from '@tanstack/react-query';
 import { BidTableHead, BidTableRow } from '@/components/auction-detail';
 
 import { bidKeys } from '@/hooks/queries/bids/keys';
+import { useBidRealtime } from '@/hooks/realtime/useBidRealtime';
 
 import { BidListResponse, BidType } from '@/types/bid';
 
 interface BidTableProps {
   auctionId: string;
   initialBids?: BidType[];
+  isExpired?: boolean;
 }
-const BidTable = ({ auctionId, initialBids }: BidTableProps) => {
+const BidTable = ({ auctionId, initialBids, isExpired = false }: BidTableProps) => {
   const [animationParent] = useAutoAnimate();
   const [hasAnimated, setHasAnimated] = useState(false);
 
   const queryClient = useQueryClient();
+
+  // 실시간 입찰 업데이트 훅 사용 (종료된 경매에서는 비활성화)
+  useBidRealtime({ auctionId, limits: 10, isExpired });
 
   const bidQueryKey = bidKeys.list(auctionId, 10);
   const cachedBidsData = queryClient.getQueryData<BidListResponse>(bidQueryKey);

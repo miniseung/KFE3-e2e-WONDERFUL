@@ -33,13 +33,17 @@ const BidForm = ({
 
   const bidMutation = useBidMutation();
 
+  // 실시간으로 업데이트되는 현재 가격 사용
+  // React Query 캐시에서 최신 데이터를 가져오되, 없으면 props의 currentPrice 사용
+  const realtimeCurrentPrice = data?.data.auctionPrice?.currentPrice || currentPrice;
+
   const isOwnAuction = currentUserId === seller.id;
 
   const handleBidPriceChange = (price: number | null) => {
     setBidPrice(price);
 
     if (price !== null) {
-      const validation = validateBidPrice(price, currentPrice, minBidUnit);
+      const validation = validateBidPrice(price, realtimeCurrentPrice, minBidUnit);
       setValidationError(validation.isValid ? '' : validation.message);
     } else {
       setValidationError('');
@@ -59,9 +63,9 @@ const BidForm = ({
       return;
     }
 
-    const finalBidPrice = bidPrice ?? currentPrice + minBidUnit;
+    const finalBidPrice = bidPrice ?? realtimeCurrentPrice + minBidUnit;
 
-    const validation = validateBidPrice(finalBidPrice, currentPrice, minBidUnit || 1000);
+    const validation = validateBidPrice(finalBidPrice, realtimeCurrentPrice, minBidUnit || 1000);
     if (!validation.isValid) {
       setValidationError(validation.message);
       return;
@@ -112,7 +116,7 @@ const BidForm = ({
       >
         {!isExpired && data?.data.auctionPrice?.isInstantBuyEnabled && !isOwnAuction && (
           <ButtonDirectDeal
-            directPrice={formatCurrencyWithUnit(currentPrice * 1.2)}
+            directPrice={formatCurrencyWithUnit(realtimeCurrentPrice * 1.2)}
             auctionId={auctionId}
             seller={seller}
             currentUserId={currentUserId}
@@ -120,7 +124,7 @@ const BidForm = ({
         )}
         <BidFormInput
           auctionId={auctionId}
-          currentPrice={currentPrice}
+          currentPrice={realtimeCurrentPrice}
           minUnit={minBidUnit}
           bidPrice={bidPrice}
           isBidInputOpen={isBidInputOpen}
@@ -137,7 +141,7 @@ const BidForm = ({
       </button>
       <BidFormBottom
         auctionId={auctionId}
-        currentPrice={currentPrice}
+        currentPrice={realtimeCurrentPrice}
         endTime={endTime}
         isExpired={isExpired}
         seller={seller}
