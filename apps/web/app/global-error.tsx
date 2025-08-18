@@ -2,8 +2,6 @@
 
 import { useEffect } from 'react';
 
-import * as Sentry from '@sentry/nextjs';
-
 const GlobalError = ({
   error,
   reset,
@@ -12,7 +10,7 @@ const GlobalError = ({
   reset: () => void;
 }) => {
   useEffect(() => {
-    Sentry.captureException(error);
+    console.error('Global error:', error);
   }, [error]);
 
   return (
