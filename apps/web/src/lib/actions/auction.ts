@@ -263,7 +263,6 @@ export const updateAuctionStatus = async (itemId: string, status: AuctionStatus)
       .from('auction_items')
       .update({
         status,
-        updatedAt: new Date().toISOString(),
       })
       .eq('id', itemId)
       .select('id, status')
