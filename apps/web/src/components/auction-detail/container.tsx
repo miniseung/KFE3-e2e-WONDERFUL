@@ -179,7 +179,11 @@ const AuctionDetailContainer = () => {
         <ItemDescription item={item} />
         <section ref={bidTableRef} className="space-y-2 pb-10 pt-6">
           <h3 className="mb-2.5 text-base font-bold">입찰 현황</h3>
-          <BidTable auctionId={auction.id} initialBids={initialBids} />
+          <BidTable
+            auctionId={auction.id}
+            initialBids={initialBids}
+            isExpired={countdownData.isExpired}
+          />
         </section>
       </article>
       <aside className="sticky bottom-0 z-50 w-full">
