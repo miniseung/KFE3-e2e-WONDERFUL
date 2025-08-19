@@ -1,204 +1,162 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
 import type { Address, CreateAddressRequest } from '@/lib/types/address';
+import {
+  getAuthenticatedUser,
+  handlePrimaryUpdate,
+  revalidatePages,
+  createTimestamps,
+  updateTimestamp,
+} from '@/lib/utils/server-actions';
 
-// 주소 목록 조회
+const transform = (item: any): Address => ({
+  id: item.id,
+  userId: item.user_id,
+  label: item.label,
+  userName: item.user_name,
+  phone: item.phone,
+  address: item.address,
+  addressDetail: item.address_detail,
+  isPrimary: item.is_primary,
+  createdAt: item.created_at,
+  updatedAt: item.updated_at,
+});
+
 export async function getAddresses(): Promise<{ data?: Address[]; error?: string }> {
   try {
-    const supabase = await createClient();
-
-    // 사용자 인증 확인
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { error: '인증이 필요합니다.' };
-    }
+    const { user, error: authError, supabase } = await getAuthenticatedUser();
+    if (authError || !user) return { error: '인증이 필요합니다.' };
 
     const { data, error } = await supabase
       .from('addresses')
       .select('*')
-      .eq('userId', user.id)
-      .order('isPrimary', { ascending: false })
-      .order('createdAt', { ascending: false });
+      .eq('user_id', user.id)
+      .single();
 
     if (error) {
-      console.error('주소 조회 오류:', error);
+      if (error.code === 'PGRST116') {
+        return { data: [] };
+      }
       return { error: error.message };
     }
-
-    return { data: data as Address[] };
-  } catch (error) {
-    console.error('주소 조회 중 오류:', error);
+    return { data: data ? [transform(data)] : [] };
+  } catch {
     return { error: '주소 조회 중 오류가 발생했습니다.' };
   }
 }
 
-// 주소 등록
 export async function createAddress(
   addressData: CreateAddressRequest
 ): Promise<{ data?: Address; error?: string }> {
   try {
-    const supabase = await createClient();
-
-    // 사용자 인증 확인
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { error: '인증이 필요합니다.' };
-    }
+    const { user, error: authError, supabase } = await getAuthenticatedUser();
+    if (authError || !user) return { error: '인증이 필요합니다.' };
+    if (!addressData.address) return { error: '주소는 필수 입력 항목입니다.' };
 
     const { label, userName, phone, address, addressDetail, isPrimary } = addressData;
 
-    // 필수 필드 검증
-    if (!address) {
-      return { error: '주소는 필수 입력 항목입니다.' };
-    }
-
-    // 기본 주소로 설정하는 경우, 기존 기본 주소 해제
-    if (isPrimary) {
-      const { error: updateError } = await supabase
-        .from('addresses')
-        .update({ isPrimary: false })
-        .eq('userId', user.id)
-        .eq('isPrimary', true);
-
-      if (updateError) {
-        console.error('기존 기본 주소 해제 오류:', updateError);
-      }
-    }
-
-    const { data, error } = await supabase
+    const { data: existingAddress } = await supabase
       .from('addresses')
-      .insert({
-        userId: user.id,
-        label,
-        userName,
-        phone,
-        address,
-        addressDetail,
-        isPrimary: isPrimary || false,
-      })
-      .select()
+      .select('*')
+      .eq('user_id', user.id)
       .single();
 
-    if (error) {
-      console.error('주소 등록 오류:', error);
-      return { error: error.message };
+    if (existingAddress) {
+      const { data, error } = await supabase
+        .from('addresses')
+        .update({
+          label,
+          user_name: userName,
+          phone,
+          address,
+          address_detail: addressDetail,
+          is_primary: isPrimary || false,
+          ...(await updateTimestamp()),
+        })
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) return { error: error.message };
+
+      await revalidatePages(['/chat', '/address']);
+      return { data: transform(data) };
+    } else {
+      const { data, error } = await supabase
+        .from('addresses')
+        .insert({
+          user_id: user.id,
+          label,
+          user_name: userName,
+          phone,
+          address,
+          address_detail: addressDetail,
+          is_primary: isPrimary || false,
+          ...(await createTimestamps()),
+        })
+        .select()
+        .single();
+
+      if (error) return { error: error.message };
+
+      await revalidatePages(['/chat', '/address']);
+      return { data: transform(data) };
     }
-
-    // 캐시 무효화
-    revalidatePath('/chat');
-    revalidatePath('/address');
-
-    return { data: data as Address };
-  } catch (error) {
-    console.error('주소 등록 중 오류:', error);
+  } catch {
     return { error: '주소 등록 중 오류가 발생했습니다.' };
   }
 }
 
-// 주소 수정
 export async function updateAddress(
   id: string,
-  addressData: Partial<CreateAddressRequest>
+  addressData: CreateAddressRequest
 ): Promise<{ data?: Address; error?: string }> {
   try {
-    const supabase = await createClient();
-
-    // 사용자 인증 확인
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { error: '인증이 필요합니다.' };
-    }
+    const { user, error: authError, supabase } = await getAuthenticatedUser();
+    if (authError || !user) return { error: '인증이 필요합니다.' };
 
     const { label, userName, phone, address, addressDetail, isPrimary } = addressData;
 
-    // 기본 주소로 설정하는 경우, 기존 기본 주소 해제
     if (isPrimary) {
-      const { error: updateError } = await supabase
-        .from('addresses')
-        .update({ isPrimary: false })
-        .eq('userId', user.id)
-        .eq('isPrimary', true)
-        .neq('id', id);
-
-      if (updateError) {
-        console.error('기존 기본 주소 해제 오류:', updateError);
-      }
+      await handlePrimaryUpdate(supabase, 'addresses', user.id, id);
     }
 
     const { data, error } = await supabase
       .from('addresses')
       .update({
         label,
-        userName,
+        user_name: userName,
         phone,
         address,
-        addressDetail,
-        isPrimary,
+        address_detail: addressDetail,
+        is_primary: isPrimary,
+        ...(await updateTimestamp()),
       })
       .eq('id', id)
-      .eq('userId', user.id) // RLS 정책: 자신의 주소만 수정 가능
+      .eq('user_id', user.id)
       .select()
       .single();
 
-    if (error) {
-      console.error('주소 수정 오류:', error);
-      return { error: error.message };
-    }
+    if (error) return { error: error.message };
 
-    // 캐시 무효화
-    revalidatePath('/chat');
-    revalidatePath('/address');
-
-    return { data: data as Address };
-  } catch (error) {
-    console.error('주소 수정 중 오류:', error);
+    await revalidatePages(['/chat', '/address']);
+    return { data: transform(data) };
+  } catch {
     return { error: '주소 수정 중 오류가 발생했습니다.' };
   }
 }
 
-// 주소 삭제
 export async function deleteAddress(id: string): Promise<{ error?: string }> {
   try {
-    const supabase = await createClient();
+    const { user, error: authError, supabase } = await getAuthenticatedUser();
+    if (authError || !user) return { error: '인증이 필요합니다.' };
 
-    // 사용자 인증 확인
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { error } = await supabase.from('addresses').delete().eq('id', id).eq('user_id', user.id);
+    if (error) return { error: error.message };
 
-    if (authError || !user) {
-      return { error: '인증이 필요합니다.' };
-    }
-
-    const { error } = await supabase.from('addresses').delete().eq('id', id).eq('userId', user.id); // RLS 정책: 자신의 주소만 삭제 가능
-
-    if (error) {
-      console.error('주소 삭제 오류:', error);
-      return { error: error.message };
-    }
-
-    // 캐시 무효화
-    revalidatePath('/chat');
-    revalidatePath('/address');
-
+    await revalidatePages(['/chat', '/address']);
     return {};
-  } catch (error) {
-    console.error('주소 삭제 중 오류:', error);
+  } catch {
     return { error: '주소 삭제 중 오류가 발생했습니다.' };
   }
 }

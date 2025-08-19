@@ -46,22 +46,30 @@ export const useSearchHistory = () => {
     const trimmedQuery = query.trim();
     const now = Date.now();
 
-    // 기존 기록에서 중복 제거
-    const filteredHistory = history.filter(
-      (item) => item.query.toLowerCase() !== trimmedQuery.toLowerCase()
-    );
+    // localStorage에서 최신 데이터 가져오기
+    try {
+      const stored = localStorage.getItem(SEARCH_HISTORY_STORAGE_KEY);
+      const currentHistory = stored ? (JSON.parse(stored) as SearchHistoryItem[]) : [];
 
-    // 새 항목 추가
-    const newItem: SearchHistoryItem = {
-      id: `search_${now}_${Math.random().toString(36).substr(2, 9)}`,
-      query: trimmedQuery,
-      timestamp: now,
-    };
+      // 기존 기록에서 중복 제거
+      const filteredHistory = currentHistory.filter(
+        (item) => item.query.toLowerCase() !== trimmedQuery.toLowerCase()
+      );
 
-    // 최대 개수 제한하여 새 배열 생성
-    const newHistory = [newItem, ...filteredHistory].slice(0, SEARCH_HISTORY_MAX_SIZE);
+      // 새 항목 추가
+      const newItem: SearchHistoryItem = {
+        id: `search_${now}_${Math.random().toString(36).substr(2, 9)}`,
+        query: trimmedQuery,
+        timestamp: now,
+      };
 
-    saveHistory(newHistory);
+      // 최대 개수 제한하여 새 배열 생성
+      const newHistory = [newItem, ...filteredHistory].slice(0, SEARCH_HISTORY_MAX_SIZE);
+
+      saveHistory(newHistory);
+    } catch (error) {
+      console.error('검색 기록 추가 실패:', error);
+    }
   };
 
   // 특정 검색어 삭제

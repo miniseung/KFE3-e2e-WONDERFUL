@@ -1,34 +1,25 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
 import { InputPersonal } from '@/components/personal-info';
 import { Button } from '@/components/ui';
 import { Checkbox } from '@/components/ui/checkbox';
-
+import { createAddress } from '@/lib/actions/address';
 import type { CreateAddressRequest } from '@/lib/types/address';
 import { useToastStore } from '@/lib/zustand/store';
+import { useQueryClient } from '@tanstack/react-query';
 
-interface AddressFormProps {
-  item: AddressFormItem;
-  onClick: (data: CreateAddressRequest) => void;
-}
-
-interface AddressFormItem {
-  name: string;
-  address: string;
-  detail: string;
-  phone: string;
-}
-
-const AddressForm = ({ item, onClick }: AddressFormProps) => {
+const AddressForm = () => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const { showToast } = useToastStore();
-
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<CreateAddressRequest>({
-    userName: item.name || '',
-    address: item.address || '',
-    addressDetail: item.detail || '',
-    phone: item.phone || '',
+    userName: '',
+    address: '',
+    addressDetail: '',
+    phone: '',
     isPrimary: false,
   });
 
@@ -36,33 +27,57 @@ const AddressForm = ({ item, onClick }: AddressFormProps) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleCheckboxChange = (checked: boolean) => {
-    setFormData((prev) => ({ ...prev, isPrimary: checked }));
+  const handleCheckboxChange = (checked: boolean | string) => {
+    setFormData((prev) => ({ ...prev, isPrimary: checked === true }));
   };
 
-  const handleSubmit = () => {
-    // 필수 필드 검증
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     if (!formData.address) {
       showToast({
         status: 'error',
-        title: '입력 오류',
-        subtext: '주소를 입력해주세요.',
+        title: '주소를 입력해주세요.',
         autoClose: true,
       });
       return;
     }
 
-    // props로 받은 onClick 함수에 formData 전달
-    onClick(formData);
+    setIsLoading(true);
+
+    try {
+      const result = await createAddress(formData);
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      showToast({
+        status: 'success',
+        title: '주소가 등록되었습니다.',
+        autoClose: true,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+      router.push('/address');
+    } catch (error) {
+      showToast({
+        status: 'error',
+        title: error instanceof Error ? error.message : '주소 등록에 실패했습니다.',
+        autoClose: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="flex h-full w-full flex-col justify-between px-4">
+    <form onSubmit={handleSubmit} className="flex h-full w-full flex-col justify-between px-4">
       <div className="flex flex-col gap-4">
         <InputPersonal
           id="userName"
           label="이름"
-          placeholder={item.name}
+          placeholder="이름을 입력해주세요"
           type="text"
           value={formData.userName || ''}
           onChange={(e) => handleInputChange('userName', e.target.value)}
@@ -71,14 +86,14 @@ const AddressForm = ({ item, onClick }: AddressFormProps) => {
           <InputPersonal
             id="address"
             label="주소"
-            placeholder={item.address}
+            placeholder="주소를 입력해주세요"
             type="text"
             value={formData.address}
             onChange={(e) => handleInputChange('address', e.target.value)}
           />
           <InputPersonal
             id="addressDetail"
-            placeholder={item.detail}
+            placeholder="상세주소를 입력해주세요"
             type="text"
             value={formData.addressDetail || ''}
             onChange={(e) => handleInputChange('addressDetail', e.target.value)}
@@ -87,7 +102,7 @@ const AddressForm = ({ item, onClick }: AddressFormProps) => {
         <InputPersonal
           id="phone"
           label="휴대전화"
-          placeholder={item.phone}
+          placeholder="휴대전화 번호를 입력해주세요"
           type="tel"
           value={formData.phone || ''}
           onChange={(e) => handleInputChange('phone', e.target.value)}
@@ -102,11 +117,11 @@ const AddressForm = ({ item, onClick }: AddressFormProps) => {
           />
           <label htmlFor="isPrimary">대표 주소로 설정하기</label>
         </div>
-        <Button onClick={handleSubmit} fullWidth>
-          제출하기
+        <Button type="submit" fullWidth disabled={isLoading}>
+          {isLoading ? '등록 중...' : '제출하기'}
         </Button>
       </div>
-    </div>
+    </form>
   );
 };
 

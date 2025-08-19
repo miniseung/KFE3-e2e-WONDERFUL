@@ -15,7 +15,7 @@ const Page = async () => {
 
   return (
     <Container className="px-4">
-      <PurchasesList userId={user.id} />
+      <PurchasesList />
     </Container>
   );
 };

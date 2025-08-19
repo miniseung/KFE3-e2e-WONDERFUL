@@ -1,11 +1,8 @@
-// apps/web/app/layout.tsx
-
 import localFont from 'next/font/local';
 
 import type { Metadata, Viewport } from 'next';
 
 import Toast from '@/components/common/toast';
-import Navigation from '@/components/layout/navigation';
 
 import LocationModalProvider from '@/providers/location-modal-provider';
 import QueryProvider from '@/providers/query-provider';
@@ -16,13 +13,15 @@ import './globals.css';
 const pretendard = localFont({
   src: '../public/fonts/PretendardVariable.woff2',
   display: 'swap',
-  weight: '45 920',
+  weight: '400 700',
   style: 'normal',
   variable: '--font-pretendard',
+  fallback: ['system-ui', 'Apple SD Gothic Neo', 'Malgun Gothic', 'sans-serif'],
+  preload: true,
 });
 
-const APP_NAME = '지역 경매 서비스';
-const APP_DEFAULT_TITLE = '지역 경매 서비스';
+const APP_NAME = 'Living Auction';
+const APP_DEFAULT_TITLE = '리빙 옥션: 지역 기반 실시간 경매 플랫폼';
 const APP_TITLE_TEMPLATE = '%s - 경매앱';
 const APP_DESCRIPTION = '지역 기반 실시간 경매 플랫폼';
 
@@ -34,6 +33,9 @@ export const metadata: Metadata = {
   },
   description: APP_DESCRIPTION,
   manifest: '/manifest.webmanifest',
+  icons: {
+    icon: { url: '/logo.svg', type: 'image/svg+xml' },
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -65,26 +67,20 @@ export const viewport: Viewport = {
   themeColor: '#fff',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="ko" className={pretendard.variable}>
-      <body className={pretendard.className} suppressHydrationWarning>
+      <body className={pretendard.className}>
         <QueryProvider>
           <UserProvider>
-            <div
-              className="relative mx-auto flex h-screen min-w-[320px] max-w-[480px] flex-col"
-              style={{ position: 'relative' }}
-            >
+            <div className="relative mx-auto h-dvh min-w-[320px] max-w-[480px] overflow-hidden bg-white">
               {children}
-
               <Toast />
-
               <LocationModalProvider />
-              <Navigation />
             </div>
           </UserProvider>
         </QueryProvider>

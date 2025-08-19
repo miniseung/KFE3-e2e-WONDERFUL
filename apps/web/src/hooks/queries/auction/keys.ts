@@ -1,17 +1,60 @@
+import { SortOption } from '@/types/auction-prisma';
+
+type AuctionListKey = [
+  'auctions',
+  'list',
+  {
+    locationName?: string;
+    category_id?: string;
+    sort?: SortOption;
+    includeCompleted?: boolean;
+  },
+];
+
+type AuctionDetailKey = ['auctions', 'detail', string, string?];
+
+type LocationKey = ['locations', 'detail', string];
+
 export const auctionKeys = {
   all: ['auctions'] as const,
 
-  // 경매 목록 조회 쿼리 키
-  // location_id: 지역 필터, category_id: 카테고리 필터, sort: 정렬 기준, includeCompleted: 종료된 경매 포함 여부
-  lists: () => [...auctionKeys.all, 'list'] as const,
-  list: (location_id?: string, category_id?: string, sort?: string, includeCompleted?: boolean) =>
-    [...auctionKeys.lists(), location_id, category_id, sort, includeCompleted] as const,
+  lists: () => ['auctions', 'list'] as const,
+  list: (
+    locationName?: string,
+    category_id?: string,
+    sort?: SortOption,
+    includeCompleted?: boolean
+  ): AuctionListKey => [
+    'auctions',
+    'list',
+    {
+      locationName,
+      category_id,
+      sort,
+      includeCompleted,
+    },
+  ],
 
-  // 경매 상세 페이지 조회 쿼리 키
-  details: () => [...auctionKeys.all, 'detail'] as const,
-  detail: (id: string) => [...auctionKeys.details(), id] as const,
+  details: () => ['auctions', 'detail'] as const,
+  detail: (id: string, userId?: string): AuctionDetailKey => {
+    if (userId) {
+      return ['auctions', 'detail', id, userId];
+    }
+    return ['auctions', 'detail', id];
+  },
 
-  // 위치 정보 조회 쿼리 키
-  locations: () => [...auctionKeys.all, 'location'] as const,
-  location: (id: string) => [...auctionKeys.locations(), id] as const,
+  locations: () => ['locations'] as const,
+  location: (locationId: string): LocationKey => ['locations', 'detail', locationId],
+
+  favorite: (auctionId: string, userId?: string) => auctionKeys.detail(auctionId, userId),
+
+  invalidateAll: () => auctionKeys.all,
+  invalidateLists: () => auctionKeys.lists(),
+  invalidateDetails: () => auctionKeys.details(),
+  invalidateDetail: (id: string, userId?: string) => auctionKeys.detail(id, userId),
 } as const;
+
+export type AuctionKeys = typeof auctionKeys;
+export type AuctionListKeyType = AuctionListKey;
+export type AuctionDetailKeyType = AuctionDetailKey;
+export type LocationKeyType = LocationKey;

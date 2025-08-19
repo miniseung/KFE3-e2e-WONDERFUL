@@ -17,7 +17,7 @@ const AttachImagesThumbnail = ({ url, handleDelete }: AttacedAuctionImageProps) 
         <span className="hidden">닫기</span>
         <X size={16} />
       </button>
-      <Thumbnail className="my-3 size-16" alt="" url={url} />
+      <Thumbnail className="size-15 my-3" alt="" url={url} size={64} />
     </div>
   );
 };

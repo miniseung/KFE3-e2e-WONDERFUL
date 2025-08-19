@@ -2,14 +2,14 @@
 
 import Image from 'next/image';
 
+import { Button } from '@/components/ui';
+
 import { signInWithGoogle } from '@/lib/actions/auth';
+import { useToastStore } from '@/lib/zustand/store';
 
-interface GoogleLoginButtonProps {
-  className?: string;
-  disabled?: boolean;
-}
+const GoogleLoginButton = ({ disabled }: { disabled?: boolean }) => {
+  const { showToast } = useToastStore();
 
-const GoogleLoginButton = ({ className, disabled }: GoogleLoginButtonProps) => {
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithGoogle();
@@ -17,28 +17,28 @@ const GoogleLoginButton = ({ className, disabled }: GoogleLoginButtonProps) => {
       if (result.success && result.redirectUrl) {
         window.location.href = result.redirectUrl;
       } else {
-        console.error('구글 로그인 실패:', result.error);
       }
     } catch (error) {
-      console.error('구글 로그인 예외:', error);
+      showToast({
+        status: 'error',
+        title: '소셜 로그인 실패',
+        subtext: '구글 소셜 로그인에 실패했습니다. 잠시 후 다시 시도 해주세요.',
+        autoClose: true,
+      });
     }
   };
 
   return (
-    <button
+    <Button
+      type="button"
+      size="xl"
       onClick={handleGoogleLogin}
       disabled={disabled}
-      className={`text-primary-500 relative box-border flex h-[60px] w-[360px] cursor-pointer items-center justify-center rounded-[99px] border border-neutral-100 bg-white px-5 text-lg transition-all hover:bg-neutral-100 ${className}`}
+      className="flex w-full items-center justify-center gap-2 rounded-sm border border-neutral-100 bg-white hover:bg-neutral-50"
     >
-      <Image
-        src="/icon/Google.svg"
-        alt="Google 로그인"
-        width={24}
-        height={24}
-        className="absolute left-5"
-      />
+      <Image src="/icon/Google.svg" alt="Google 로그인" width={24} height={24} />
       <span className="text-neutral-600">Google로 시작하기</span>
-    </button>
+    </Button>
   );
 };
 

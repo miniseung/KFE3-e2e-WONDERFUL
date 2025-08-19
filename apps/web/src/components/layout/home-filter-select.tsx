@@ -20,10 +20,8 @@ const HomeFilterSelect = () => {
 
   const { selectedLocation, setLocation } = useLocationStore();
 
-  // 실제 사용자 위치 데이터 조회
   const { data: userLocations, isLoading, error, refetch } = useUserLocations();
 
-  // 위치명에서 마지막 "동"만 표시하는 함수
   const getDisplayName = (locationName: string) => {
     if (!locationName || typeof locationName !== 'string' || !locationName.trim()) {
       return '알 수 없음';
@@ -42,16 +40,13 @@ const HomeFilterSelect = () => {
     refetch();
   };
 
-  // 초기 로드시 기본 위치 설정
   useEffect(() => {
     if (userLocations && userLocations.length > 0) {
-      // 현재 선택된 위치가 없거나, 목록에 없는 경우에만 설정
       const isCurrentLocationValid = userLocations.some(
         (loc) => loc.locationId === selectedLocation.locationId
       );
 
       if (!selectedLocation.locationId || !isCurrentLocationValid) {
-        // 기본 위치(IsPrimary=true)를 찾거나 첫 번째 위치를 설정
         const primaryLocation = userLocations.find((loc) => loc.IsPrimary);
         const defaultLocation = primaryLocation || userLocations[0];
 
@@ -74,17 +69,10 @@ const HomeFilterSelect = () => {
 
   const homeFilterWrapper = cn('text-h4 flex h-10 items-center justify-between px-1 font-bold');
 
-  // 로딩 상태
   if (isLoading) {
-    return (
-      <div className={cn(homeFilterWrapper, 'gap-2')}>
-        <div className="h-9 w-14 animate-pulse rounded-sm bg-neutral-200"></div>
-        <ChevronDown size={24} className="text-neutral-400" />
-      </div>
-    );
+    return <div className="w-22 h-9 animate-pulse rounded-sm bg-neutral-200" />;
   }
 
-  // 오류 상태
   if (error) {
     return (
       <button
@@ -99,7 +87,6 @@ const HomeFilterSelect = () => {
     );
   }
 
-  // 등록된 위치가 없는 경우
   if (!userLocations || userLocations.length === 0) {
     return (
       <Link
@@ -111,7 +98,7 @@ const HomeFilterSelect = () => {
       </Link>
     );
   }
-  // 등록된 위치가 있는 경우
+
   return (
     <Popover open={isSelectOpen} onOpenChange={setIsSelectOpen}>
       <PopoverTrigger asChild>
@@ -135,7 +122,6 @@ const HomeFilterSelect = () => {
             );
           })}
           <li>
-            {/* /위치설정 페이지로 이동 */}
             <Link href={'/profile/location'}>내 동네 설정</Link>
           </li>
         </ul>

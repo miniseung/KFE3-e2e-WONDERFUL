@@ -23,41 +23,32 @@ const AttachImages = ({
   onRemoveExistingImage,
 }: ImagesUploaderProps) => {
   const [previewImages, setPreviewImages] = useState<string[]>([]);
-
   const currentImgLength = previewImages.length;
 
-  // 새 이미지만 처리
   const { handleChange, syncCurrentFiles } = useOnChangePreview(
-    (length) => {},
+    () => {},
     setPreviewImages,
     setFiles
   );
 
-  // 새 이미지 삭제 핸들러
   const handleDeleteNewImage = (index: number) => {
     deletePreviewImage({
       setImgLength: () => {},
       setPreviewImages,
       setFiles,
       index,
-      onFilesChange: syncCurrentFiles, // ref 동기화 콜백 추가
+      onFilesChange: syncCurrentFiles,
     });
   };
 
-  // 기존 이미지 삭제 핸들러
   const handleDeleteExistingImage = (imageUrl: string) => {
-    console.log('🗑️ 기존 이미지 삭제 시도:', imageUrl);
-    console.log('🗑️ 현재 existingImages:', existingImages);
-    console.log('🗑️ onRemoveExistingImage 함수:', !!onRemoveExistingImage);
     if (onRemoveExistingImage) {
       onRemoveExistingImage(imageUrl);
     }
   };
 
-  // 총 이미지 개수 계산
   const totalImagesCount = existingImages.length + currentImgLength;
 
-  // 새 이미지 추가 시 총 개수 제한 확인
   const handleNewImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
     if (!files) return;
@@ -77,26 +68,20 @@ const AttachImages = ({
 
   return (
     <div className="flex h-20 items-center gap-2">
-      <AttachImagesInput
-        onChange={handleNewImageChange}
-        imgLength={totalImagesCount} // 전체 개수로 제한 확인
-        id={id}
-      />
+      <AttachImagesInput onChange={handleNewImageChange} imgLength={totalImagesCount} id={id} />
       <div className="scrollbar-hide-x flex w-full gap-1">
-        {/* 기존 이미지들 표시 */}
         {isEdit &&
-          existingImages.map((imageUrl, index) => (
+          existingImages.map((imageUrl) => (
             <AttachImagesThumbnail
-              key={`existing-${imageUrl}`} // URL을 key로 사용 (고유성 보장)
+              key={`existing-${imageUrl}`}
               url={imageUrl}
               handleDelete={() => handleDeleteExistingImage(imageUrl)}
             />
           ))}
 
-        {/* 새로 추가된 이미지들 표시 */}
         {previewImages.map((item, index) => (
           <AttachImagesThumbnail
-            key={`new-${index}-${item}`} // 인덱스와 URL 조합으로 고유성 보장
+            key={`new-${index}-${item}`}
             url={item}
             handleDelete={() => handleDeleteNewImage(index)}
           />

@@ -9,7 +9,10 @@ interface HeaderWrapperProps {
 const HeaderWrapper = ({ children, className, style }: HeaderWrapperProps) => {
   return (
     <header
-      className={cn('flex h-16 w-full items-center justify-between px-4', className)}
+      className={cn(
+        'h-15 absolute top-0 z-50 flex w-full flex-shrink-0 items-center justify-between bg-white px-4 pt-1',
+        className
+      )}
       style={style}
     >
       {children}

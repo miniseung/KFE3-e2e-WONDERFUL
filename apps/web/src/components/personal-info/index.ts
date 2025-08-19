@@ -2,11 +2,13 @@ export { default as AccountItem } from './account/item';
 export { default as AccountDrawerContent } from './account/drawer-content';
 export { default as AccountList } from './account/list';
 export { default as AccountForm } from './account/form';
+export { default as AccountEditForm } from './account/edit-form';
 
 export { default as AddressItem } from './address/address-item';
 export { default as AddressDrawerContent } from './address/drawer-content';
 export { default as AddressList } from './address/list';
 export { default as AddressForm } from './address/form';
+export { default as AddressEditForm } from './address/edit-form';
 
 export { default as BadgePrimary } from './badge-primary';
 export { default as ButtonBox } from './button/button-box';

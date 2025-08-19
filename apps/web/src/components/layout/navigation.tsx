@@ -19,14 +19,21 @@ const Navigation = () => {
   const pathname = usePathname();
   const showNavigation = ['/', '/auction', '/search', '/chat', '/profile'].includes(pathname || '');
 
-  if (!showNavigation) return null;
+  if (!showNavigation) {
+    return null;
+  }
 
   return (
-    <nav className="mx-auto w-full min-w-[320px] max-w-[480px] bg-white shadow-[var(--shadow-nav)]">
-      <ul className="flex h-[88px] w-full">
+    <nav
+      className="absolute bottom-0 left-0 right-0 z-50 bg-white shadow-[var(--shadow-nav)]"
+      style={{
+        height: 'calc(76px + env(safe-area-inset-bottom))',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
+      <ul className="flex h-full w-full">
         {NAV_MENU.map(({ name, href, icon: Icon }) => {
           const isActive = pathname === href;
-
           return (
             <li key={href} className="h-full w-1/4">
               <Link

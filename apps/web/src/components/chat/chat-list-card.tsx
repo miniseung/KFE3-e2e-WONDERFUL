@@ -56,7 +56,6 @@ const ChatListCard = ({ chatInfo }: { chatInfo: ChatRoom }) => {
     }
   };
 
-  // TODO: 기능 연결 시 roomId 로 연결 해서 해당 태그 내에서 작성할 것.
   const roomId = chatInfo.id;
   const link = `/chat/${roomId}?auctionId=${auctionId}&interlocutor=${otherUser.nickname}`;
 
@@ -67,6 +66,7 @@ const ChatListCard = ({ chatInfo }: { chatInfo: ChatRoom }) => {
           url={auction.thumbnailUrl as string}
           alt={'sample'}
           className="w-15 h-15 shrink-0"
+          size={60}
         />
         <div className="flex w-full shrink flex-col">
           <div>
@@ -75,12 +75,12 @@ const ChatListCard = ({ chatInfo }: { chatInfo: ChatRoom }) => {
               <span className="text-min text-neutral-500">{msgElapsed()}</span>
             </p>
           </div>
-          <p className="text-min line-clamp-1 min-h-6 flex-1 text-neutral-500">
+          <p className="text-min line-clamp-1 min-h-4 flex-1 text-neutral-500">
             {!messages.length ? '' : messages[0]?.content}
           </p>
         </div>
       </Link>
-      <ButtonChatMore />
+      {/* <ButtonChatMore /> */}
     </div>
   );
 };

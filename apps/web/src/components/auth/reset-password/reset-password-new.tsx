@@ -6,7 +6,6 @@ import { Lock } from 'lucide-react';
 
 import ErrorMessage from '@/components/auth/error-message';
 import PasswordToggle from '@/components/auth/password-toggle';
-import SubmitButton from '@/components/auth/submit-button';
 import { InputIcon } from '@/components/common';
 
 interface ResetPasswordNewProps {
@@ -39,7 +38,6 @@ const ResetPasswordNew = ({
 }: ResetPasswordNewProps) => {
   return (
     <form onSubmit={onSubmit} className="flex flex-col items-center space-y-3">
-      {/* 새 비밀번호 */}
       <div
         className={`h-[54px] w-[327px] ${
           fieldErrors.newPassword
@@ -52,6 +50,7 @@ const ResetPasswordNew = ({
           name="newPassword"
           type={showPassword ? 'text' : 'password'}
           placeholder="새 비밀번호 입력"
+          iconStyle="both"
           value={formData.newPassword}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onInputChange('newPassword', e.target.value)
@@ -69,7 +68,6 @@ const ResetPasswordNew = ({
         </InputIcon>
       </div>
 
-      {/* 비밀번호 확인 */}
       <div
         className={`h-[54px] w-[327px] ${
           fieldErrors.confirmPassword
@@ -82,6 +80,7 @@ const ResetPasswordNew = ({
           name="confirmPassword"
           type={showConfirmPassword ? 'text' : 'password'}
           placeholder="새 비밀번호 확인"
+          iconStyle="both"
           value={formData.confirmPassword}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onInputChange('confirmPassword', e.target.value)
@@ -100,12 +99,6 @@ const ResetPasswordNew = ({
       </div>
 
       <ErrorMessage errors={fieldErrors} />
-
-      <div className="mt-[26px]">
-        <SubmitButton isFormValid={isFormValid()} isSubmitting={isSubmitting}>
-          비밀번호 변경
-        </SubmitButton>
-      </div>
     </form>
   );
 };

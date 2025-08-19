@@ -4,7 +4,7 @@ import serviceStyle from '@/components/chat/input/style';
 import { AccountDrawerContent } from '@/components/personal-info';
 import { Drawer, DrawerTrigger } from '@/components/ui';
 
-const ButtonAccount = () => {
+const ButtonAccount = ({ roomId }: { roomId: string }) => {
   return (
     <div className={serviceStyle().wrapper()}>
       <Drawer>
@@ -14,7 +14,7 @@ const ButtonAccount = () => {
           </button>
         </DrawerTrigger>
         <p className={serviceStyle().title()}>계좌 공유</p>
-        <AccountDrawerContent />
+        <AccountDrawerContent roomId={roomId} />
       </Drawer>
     </div>
   );

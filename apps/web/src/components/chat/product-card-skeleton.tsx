@@ -10,6 +10,9 @@ const ProductCardSkeleton = () => {
           <div className="h-3 w-1/2 rounded bg-neutral-200" />
         </div>
       </div>
+      <div className={productCardStyle().buttonBox()}>
+        <div className={productCardStyle().button()} />
+      </div>
     </div>
   );
 };

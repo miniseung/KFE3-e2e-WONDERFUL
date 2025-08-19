@@ -1,15 +1,10 @@
 import type { Prisma } from '@repo/db';
-
-// 경매 목록 아이템
-// 화면에 보여질 필드들: 카테고리, 아이템 썸네일, 타이틀, 경매상태, 시작가, 시작시간, 마감시간, 현재 가격
 export type AuctionListItem = Prisma.AuctionItemGetPayload<{
   include: {
     location: {
       select: {
         id: true;
         locationName: true;
-        latitude: true;
-        longitude: true;
       };
     };
     category: {
@@ -18,60 +13,6 @@ export type AuctionListItem = Prisma.AuctionItemGetPayload<{
         name: true;
       };
     };
-    auctionPrice: {
-      select: {
-        startPrice: true; // 시작가 (start_price)
-        currentPrice: true; // 현재 가격 (current_price)
-        instantPrice: true; // 즉시구매가 (instant_price)
-        minBidUnit: true; // 최소 입찰 단위 (min_bid_unit)
-        isInstantBuyEnabled: true; // 즉시구매 가능 여부
-        isExtendedAuction: true; // 연장 경매 여부
-      };
-    };
-    auctionImages: {
-      select: {
-        id: true; // 이미지 ID
-        urls: true; // 이미지 URL 배열
-      };
-    };
-    _count: {
-      select: {
-        bids: true;
-        favoriteItems: true;
-      };
-    };
-  };
-}>;
-
-// 경매 상세 페이지
-export type AuctionDetailItem = Prisma.AuctionItemGetPayload<{
-  include: {
-    // 판매자
-    seller: {
-      select: {
-        id: true;
-        nickname: true;
-        profileImg: true;
-        isVerified: true;
-      };
-    };
-    // 카테고리
-    category: {
-      select: {
-        id: true;
-        name: true;
-      };
-    };
-    // 위치 정보
-    location: {
-      select: {
-        id: true;
-        locationName: true;
-        latitude: true;
-        longitude: true;
-      };
-    };
-    // 가격
     auctionPrice: {
       select: {
         startPrice: true;
@@ -79,16 +20,14 @@ export type AuctionDetailItem = Prisma.AuctionItemGetPayload<{
         instantPrice: true;
         minBidUnit: true;
         isInstantBuyEnabled: true;
-        isExtendedAuction: true;
       };
     };
     auctionImages: {
       select: {
-        id: true; // 이미지 ID
-        urls: true; // 이미지 URL 배열
+        id: true;
+        urls: true;
       };
     };
-    // 통계
     _count: {
       select: {
         bids: true;
@@ -97,6 +36,70 @@ export type AuctionDetailItem = Prisma.AuctionItemGetPayload<{
     };
   };
 }>;
+
+export type AuctionDetailItem = Prisma.AuctionItemGetPayload<{
+  select: {
+    id: true;
+    title: true;
+    description: true;
+    status: true;
+    endTime: true;
+    thumbnailUrl: true;
+
+    // 판매자 정보 (최소한만)
+    seller: {
+      select: {
+        id: true;
+        nickname: true;
+        profileImg: true;
+      };
+    };
+
+    // 위치 정보
+    location: {
+      select: {
+        id: true;
+        locationName: true;
+      };
+    };
+
+    // 카테고리 정보
+    category: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+
+    // 가격 정보 (화면 표시용만)
+    auctionPrice: {
+      select: {
+        currentPrice: true;
+        startPrice: true;
+        instantPrice: true;
+        minBidUnit: true;
+        isInstantBuyEnabled: true;
+      };
+    };
+
+    // 이미지 정보 (캐러셀용 모든 이미지)
+    auctionImages: {
+      select: {
+        id: true;
+        urls: true;
+      };
+    };
+
+    // 통계 정보
+    _count: {
+      select: {
+        bids: true;
+        favoriteItems: true;
+      };
+    };
+  };
+}>;
+
 // 찜하기 여부
 export interface UserFavoriteStatus {
   isFavorite: boolean;
@@ -104,8 +107,8 @@ export interface UserFavoriteStatus {
 
 // 이미지 배열 처리 헬퍼 함수 타입
 export interface ProcessedImages {
-  allImages: string[]; // 모든 이미지 URL 배열
-  thumbnailUrl: string; // 대표 이미지 (첫 번째 이미지 또는 기본값)
+  allImages: string[];
+  thumbnailUrl: string;
 }
 
 // API 응답 타입들
@@ -115,11 +118,11 @@ export interface AuctionListResponse {
   total: number;
 }
 
-// 경매 상세페이지 응답
+// 경매 상세페이지 응답 (API 구조에 맞게 수정)
 export interface AuctionDetailResponse {
   data: AuctionDetailItem;
   userFavorite: UserFavoriteStatus;
-  currentUserId: string | null; // 현재 로그인한 사용자의 ID
+  currentUserId: string | null;
 }
 
 // 필터 및 정렬 타입들
@@ -135,7 +138,6 @@ export interface AttacedAuctionImageProps {
   handleDelete: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-//경매 게시글 등록 스토리지 이미지
 export interface AttachImageInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   imgLength: number;

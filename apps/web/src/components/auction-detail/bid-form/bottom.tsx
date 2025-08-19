@@ -7,7 +7,7 @@ import { formatCurrencyWithUnit } from '@/lib/utils/price';
 
 import { BidBaseProps } from '@/types/bid';
 
-const BidFormBottom = ({ auctionId, currentPrice, isExpired }: BidBaseProps) => {
+const BidFormBottom = ({ auctionId, currentPrice, isExpired, isOwnAuction }: BidBaseProps) => {
   const formattedCurrentPrice = formatCurrencyWithUnit(currentPrice);
 
   return (
@@ -21,8 +21,8 @@ const BidFormBottom = ({ auctionId, currentPrice, isExpired }: BidBaseProps) => 
       </div>
       <Button
         size="medium"
-        color={isExpired ? 'disabled' : 'primary'}
-        disabled={isExpired}
+        color={isExpired || isOwnAuction ? 'disabled' : 'primary'}
+        disabled={isExpired || isOwnAuction}
         className={`w-1/3`}
       >
         {isExpired ? '경매종료' : '입찰하기'}

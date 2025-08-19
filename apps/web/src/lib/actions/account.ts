@@ -1,42 +1,57 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
 import type { Account, CreateAccountRequest } from '@/lib/types/account';
+import {
+  getAuthenticatedUser,
+  handlePrimaryUpdate,
+  revalidatePages,
+  createTimestamps,
+  updateTimestamp,
+} from '@/lib/utils/server-actions';
 
-// 계좌 등록
+const transform = (item: any): Account => ({
+  id: item.id,
+  userId: item.user_id,
+  bankName: item.bank_name,
+  accountNumber: item.account_number,
+  accountHolder: item.account_holder,
+  isPrimary: item.is_primary,
+  createdAt: item.created_at,
+  updatedAt: item.updated_at,
+});
+
+export async function getAccounts(): Promise<{ data?: Account[]; error?: string }> {
+  try {
+    const { user, error: authError, supabase } = await getAuthenticatedUser();
+    if (authError || !user) return { error: '인증이 필요합니다.' };
+
+    const { data, error } = await supabase
+      .from('accounts')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('is_primary', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (error) return { error: error.message };
+    return { data: data?.map(transform) };
+  } catch {
+    return { error: '계좌 조회 중 오류가 발생했습니다.' };
+  }
+}
+
 export async function createAccount(
   accountData: CreateAccountRequest
 ): Promise<{ data?: Account; error?: string }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { error: '인증이 필요합니다.' };
-    }
+    const { user, error: authError, supabase } = await getAuthenticatedUser();
+    if (authError || !user) return { error: '인증이 필요합니다.' };
 
     const { bankName, accountNumber, accountHolder, isPrimary } = accountData;
-
-    if (!bankName || !accountNumber || !accountHolder) {
+    if (!bankName?.trim() || !accountNumber?.trim() || !accountHolder?.trim())
       return { error: '모든 필드는 필수 입력 항목입니다.' };
-    }
 
-    // 대표 계좌로 설정하는 경우, 기존 대표 계좌 해제 (트랜잭션 처리)
     if (isPrimary) {
-      const { error: updateError } = await supabase
-        .from('accounts')
-        .update({ is_primary: false })
-        .eq('user_id', user.id)
-        .eq('is_primary', true);
-
-      if (updateError) {
-        console.error('기존 대표 계좌 해제 오류:', updateError);
-      }
+      await handlePrimaryUpdate(supabase, 'accounts', user.id);
     }
 
     const { data, error } = await supabase
@@ -47,34 +62,68 @@ export async function createAccount(
         account_number: accountNumber,
         account_holder: accountHolder,
         is_primary: isPrimary || false,
-        created_at: new Date(),
-        updated_at: new Date(),
+        ...(await createTimestamps()),
       })
       .select()
       .single();
 
-    if (error) {
-      console.error('계좌 등록 오류:', error);
-      return { error: error.message };
+    if (error) return { error: error.message };
+
+    await revalidatePages(['/account']);
+    return { data: transform(data) };
+  } catch {
+    return { error: '계좌 등록 중 오류가 발생했습니다.' };
+  }
+}
+
+export async function updateAccount(
+  id: string,
+  accountData: CreateAccountRequest
+): Promise<{ data?: Account; error?: string }> {
+  try {
+    const { user, error: authError, supabase } = await getAuthenticatedUser();
+    if (authError || !user) return { error: '인증이 필요합니다.' };
+
+    const { bankName, accountNumber, accountHolder, isPrimary } = accountData;
+
+    if (isPrimary) {
+      await handlePrimaryUpdate(supabase, 'accounts', user.id, id);
     }
 
-    revalidatePath('/chat');
-    revalidatePath('/account');
+    const { data, error } = await supabase
+      .from('accounts')
+      .update({
+        bank_name: bankName,
+        account_number: accountNumber,
+        account_holder: accountHolder,
+        is_primary: isPrimary || false,
+        ...(await updateTimestamp()),
+      })
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .select()
+      .single();
 
-    const transformedData = {
-      id: data.id,
-      userId: data.user_id,
-      bankName: data.bank_name,
-      accountNumber: data.account_number,
-      accountHolder: data.account_holder,
-      isPrimary: data.is_primary,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
-    } as Account;
+    if (error) return { error: error.message };
 
-    return { data: transformedData };
-  } catch (error) {
-    console.error('계좌 등록 중 오류:', error);
-    return { error: '계좌 등록 중 오류가 발생했습니다.' };
+    await revalidatePages(['/account']);
+    return { data: transform(data) };
+  } catch {
+    return { error: '계좌 수정 중 오류가 발생했습니다.' };
+  }
+}
+
+export async function deleteAccount(id: string): Promise<{ error?: string }> {
+  try {
+    const { user, error: authError, supabase } = await getAuthenticatedUser();
+    if (authError || !user) return { error: '인증이 필요합니다.' };
+
+    const { error } = await supabase.from('accounts').delete().eq('id', id).eq('user_id', user.id);
+    if (error) return { error: error.message };
+
+    await revalidatePages(['/account']);
+    return {};
+  } catch {
+    return { error: '계좌 삭제 중 오류가 발생했습니다.' };
   }
 }

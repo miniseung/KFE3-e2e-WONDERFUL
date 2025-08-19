@@ -34,55 +34,43 @@ const AuctionHeader = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // 경매 상세 정보 조회 (등록 페이지가 아닐 때만)
   const shouldFetchAuction = id && id !== 'createAuction';
-  const { data: auctionData } = useAuctionDetail(shouldFetchAuction ? (id as string) : '');
+  const { data } = useAuctionDetail(shouldFetchAuction ? (id as string) : '');
+  const auctionData = data?.data;
 
-  // 현재 사용자가 경매 작성자인지 확인
-  const isOwner =
-    auctionData?.currentUserId && auctionData?.data?.sellerId === auctionData?.currentUserId;
+  const isOwner = data?.currentUserId && auctionData?.seller.id === data?.currentUserId;
 
-  // 뒤로가기
   const handleBackClick = () => {
     if (pathname.includes('createAuction')) {
-      // 경매 등록 페이지 → 메인 페이지로
       routes.push('/');
     } else if (pathname.includes('edit') && id && id !== 'createAuction') {
-      // 경매 수정 페이지 → 해당 경매 상세 페이지로
       routes.push(`/auction/${id}`);
     } else {
-      // 기타 경우 → 메인 페이지로
       routes.push('/');
     }
   };
 
-  // 삭제 처리 함수
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
 
-      // 삭제된 경매 상세 정보 먼저 제거
-      await queryClient.removeQueries({
+      queryClient.removeQueries({
         queryKey: ['auctions', 'detail', id],
       });
 
       await deleteAuction(id as string);
 
-      // 경매 목록 쿼리만 무효화(상세 쿼리 제외)
       await queryClient.invalidateQueries({
         queryKey: ['auctions', 'list'],
       });
 
-      // 경매 목록만 리패치 (상세 쿼리 제외)
       await queryClient.refetchQueries({
         queryKey: ['auctions', 'list'],
       });
 
-      // 모든 작업 완료 후 페이지 이동
       routes.replace('/');
-    } catch (error) {
+    } catch {
       alert('삭제 중 오류가 발생했습니다.');
-      console.error('경매 삭제 오류:', error as Error);
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
@@ -90,8 +78,8 @@ const AuctionHeader = () => {
   };
 
   // 경매 마감 여부 확인
-  const isAuctionExpired = auctionData?.data?.endTime
-    ? new Date() > new Date(auctionData.data.endTime)
+  const isAuctionExpired = auctionData?.endTime
+    ? new Date() > new Date(auctionData.endTime)
     : false;
 
   // 더보기 메뉴 아이템들
@@ -115,10 +103,7 @@ const AuctionHeader = () => {
   return (
     <>
       <HeaderWrapper
-        className={`${id && !pathname.includes('edit') ? 'absolute z-10 text-white' : 'bg-white'}`}
-        style={{
-          boxShadow: id && !pathname.includes('edit') ? 'var(--shadow-md)' : 'none',
-        }}
+        className={`${id && !pathname.includes('edit') ? 'absolute z-10 bg-transparent text-white' : 'bg-white'}`}
       >
         <button type="button" onClick={handleBackClick}>
           <ChevronLeftIcon />
@@ -130,10 +115,8 @@ const AuctionHeader = () => {
           </h2>
         )}
 
-        {/* 경매 상세 페이지이고, 본인이 작성한 경매일 때만 더보기 버튼 표시 */}
         {id && !pathname.includes('edit') && isOwner && <ButtonMore items={moreItems} />}
       </HeaderWrapper>
-      {/* 삭제 확인 AlertDialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

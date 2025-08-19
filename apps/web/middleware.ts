@@ -16,13 +16,9 @@ export const config = {
      * - _next/static (정적 파일)
      * - _next/image (이미지 최적화 파일)
      * - favicon.ico (파비콘 파일)
-     * - manifest.json (PWA 매니페스트)
-     * - manifest.webmanifest (PWA 매니페스트)
-     * - service-worker.js (서비스 워커)
-     * - firebase-messaging-sw.js (푸시 알림 서비스 워커)
      * - 이미지 파일들 (svg, png, jpg, jpeg, gif, webp)
      * - certificates 폴더 (인증서 관련 파일)
      */
-    '/((?!_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|service-worker.js|firebase-messaging-sw.js|certificates|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|certificates|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

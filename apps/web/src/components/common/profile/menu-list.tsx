@@ -1,61 +1,27 @@
 import Link from 'next/link';
 
-interface MenuItem {
-  title: string;
-  route: string;
-}
+import { ChevronRightIcon } from 'lucide-react';
 
-interface MenuSection {
-  id: string; // 고유 ID 추가!
-  title: string;
-  items: MenuItem[];
-}
+import { menuSections } from '@/constants/profile';
 
-const menuSections: MenuSection[] = [
-  {
-    id: 'account', // 고유 ID
-    title: '계정 정보',
-    items: [
-      { title: '판매 내역', route: '/profile/sales' },
-      { title: '구매 내역', route: '/profile/purchases' },
-      { title: '관심 목록', route: '/profile/wishlist' },
-      { title: '위치 정보 설정', route: '/profile/location' },
-      { title: '계좌 관리', route: '/account' },
-      { title: '주소 관리', route: '/address' },
-    ],
-  },
-  {
-    id: 'support',
-    title: '고객 지원',
-    items: [
-      { title: '고객센터', route: '/profile/support' },
-      { title: '설정', route: '/profile/settings' },
-    ],
-  },
-];
-
-const MenuList = () => {
-  return (
-    <nav aria-label="마이페이지 메뉴 목록">
-      {menuSections.map((section) => (
-        <section key={section.id} className="mb-14 w-full space-y-6">
-          <h2 className="mb-6 text-lg font-bold text-neutral-900">{section.title}</h2>
-          <ul className="space-y-6">
-            {section.items.map((item) => (
-              <li key={item.route}>
-                <Link
-                  href={item.route}
-                  className="block text-sm font-medium leading-[24px] text-neutral-900"
-                >
-                  {item.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
-    </nav>
-  );
-};
+const MenuList = () => (
+  <>
+    {menuSections.map((section) => (
+      <div key={section.id} className="space-y-3 bg-white px-4 py-4">
+        <h3 className="text-min font-bold text-neutral-400">{section.title}</h3>
+        <ul className="space-y-1">
+          {section.items.map((item) => (
+            <li key={item.route} className="text-sm font-medium leading-8 text-neutral-900">
+              <Link href={item.route} className="flex w-full items-center justify-between">
+                {item.title}
+                <ChevronRightIcon size={18} />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </>
+);
 
 export default MenuList;

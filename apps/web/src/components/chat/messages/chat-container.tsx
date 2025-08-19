@@ -22,8 +22,6 @@ const ChatContainer = ({ roomId }: { roomId: string }) => {
     scrollToBottom();
   }, [messages]);
 
-  // TODO: 날짜가 넘어가면 백엔드 측에서 날짜 변경 감지하여 date message 쏘는 거 연결하기
-
   return (
     <div className="scrollbar-hide-y flex flex-1 flex-col overflow-y-auto px-4">
       {messages.map((msg) => {

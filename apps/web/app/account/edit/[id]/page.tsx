@@ -1,7 +1,11 @@
-import { AccountForm } from '@/components/personal-info';
+'use client';
 
-const Page = () => {
-  return <AccountForm />;
+import { AccountEditForm } from '@/components/personal-info';
+import { use } from 'react';
+
+const Page = ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = use(params);
+  return <AccountEditForm accountId={id} />;
 };
 
 export default Page;

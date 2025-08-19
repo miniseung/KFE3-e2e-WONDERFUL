@@ -4,9 +4,6 @@ import { prisma } from '@repo/db';
 
 export async function GET() {
   try {
-    console.log('🚀 카테고리 목록 API 호출');
-
-    // 모든 카테고리 조회
     const categories = await prisma.category.findMany({
       select: {
         id: true,
@@ -17,14 +14,11 @@ export async function GET() {
       },
     });
 
-    console.log(`✅ 카테고리 조회 성공: ${categories.length}개`);
-
     return NextResponse.json({
       data: categories,
       total: categories.length,
     });
   } catch (error) {
-    console.error('🚨 카테고리 조회 에러:', error);
     return NextResponse.json(
       {
         error: 'Internal server error',

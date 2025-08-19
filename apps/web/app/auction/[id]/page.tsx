@@ -1,7 +1,12 @@
-import AuctionDetailContainer from '@/components/auction-detail/container';
+import { AuctionDetailContainer } from '@/components/auction-detail';
+import { Container } from '@/components/layout';
 
 const Page = () => {
-  return <AuctionDetailContainer />;
+  return (
+    <Container noNav noHead>
+      <AuctionDetailContainer />
+    </Container>
+  );
 };
 
 export default Page;

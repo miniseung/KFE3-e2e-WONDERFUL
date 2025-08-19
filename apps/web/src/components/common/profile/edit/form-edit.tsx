@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+import { useRouter } from 'next/navigation';
+
 import { Button } from '@/components/ui/button';
 
 import { useUpdateProfile } from '@/hooks/mutations/profile';
@@ -13,9 +15,9 @@ import NicknameInput from './nickname';
 import ProfileImageUploader from './profile-image-uploader';
 
 const ProfileEditForm = () => {
-  const { data: profile, isLoading } = useMyProfile(); // 프로필 데이터 가져오기
+  const { data: profile, isLoading } = useMyProfile();
 
-  const { showToast } = useToastStore(); // 토스트 store
+  const { showToast } = useToastStore();
 
   const {
     mutate: updateProfileMutation,
@@ -25,21 +27,21 @@ const ProfileEditForm = () => {
     error,
   } = useUpdateProfile();
 
+  const router = useRouter();
+
   const [nickname, setNickname] = useState<string>('');
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [nicknameError, setNicknameError] = useState<string>('');
-  const [isNicknameValid, setIsNicknameValid] = useState<boolean>(true); // 닉네임 유효성 상태
+  const [isNicknameValid, setIsNicknameValid] = useState<boolean>(true);
 
-  // 프로필 데이터 로드 시, 폼 필드 초기화
   useEffect(() => {
     if (profile) {
       setNickname(profile.nickname || '');
       setNicknameError('');
-      setIsNicknameValid(true); // 기존 닉네임은 유효한 것으로 처리
+      setIsNicknameValid(true);
     }
   }, [profile]);
 
-  // mutation 결과에 따른 토스트 표시
   useEffect(() => {
     if (isSuccess) {
       showToast({
@@ -48,8 +50,10 @@ const ProfileEditForm = () => {
         subtext: '변경사항이 성공적으로 저장되었어요!',
         autoClose: true,
       });
+      router.refresh();
+      router.push('/profile');
     }
-  }, [isSuccess, showToast]);
+  }, [isSuccess, showToast, router]);
 
   useEffect(() => {
     if (isError) {
@@ -76,7 +80,7 @@ const ProfileEditForm = () => {
     formData.append('nickname', nickname.trim());
 
     if (profileImage) {
-      formData.append('profileImg', profileImage); // 서버 액션 키: 'profileImg'
+      formData.append('profileImg', profileImage);
     }
 
     updateProfileMutation(formData);
@@ -84,37 +88,40 @@ const ProfileEditForm = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <div>로딩 중...</div>
+      <div className="flex flex-1 flex-col items-center gap-8 p-12">
+        <div className="flex size-36 animate-pulse flex-col rounded-full bg-neutral-200" />
+        <div className="flex h-12 w-full animate-pulse flex-col rounded-xl bg-neutral-200" />
       </div>
     );
   }
 
   return (
-    <form className="flex flex-1 flex-col" onSubmit={handleSubmit}>
-      <ProfileImageUploader
-        defaultImage={profile?.profileImg || ''}
-        onChange={(e) => {
-          const file = e.target.files?.[0] || null;
-          setProfileImage(file || null);
-        }}
-      />
+    <form
+      id="profile-edit-form"
+      className="flex h-full flex-col justify-between p-4"
+      onSubmit={handleSubmit}
+    >
+      <div className="flex flex-col gap-4" data-testid="profile-edit-form-content">
+        <ProfileImageUploader
+          defaultImage={profile?.profileImg || ''}
+          onChange={(e) => {
+            const file = e.target.files?.[0] || null;
+            setProfileImage(file || null);
+          }}
+        />
 
-      <div className="px-4">
         <NicknameInput
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           onValidationChange={handleNicknameValidationChange}
           error={nicknameError}
-          initialValue={profile?.nickname} // 기존 닉네임 전달
+          initialValue={profile?.nickname}
+          className="p-4"
         />
       </div>
-
-      <div className="mb-8 mt-2 px-4">
-        <Button type="submit" fullWidth disabled={isPending || !isNicknameValid}>
-          {isNicknameValid ? (isPending ? '수정 중...' : '수정 하기') : '닉네임 중복 체크'}
-        </Button>
-      </div>
+      <Button type="submit" fullWidth disabled={isPending || !isNicknameValid} className="my-4">
+        {isNicknameValid ? (isPending ? '수정 중...' : '프로필 수정') : '닉네임 중복 체크'}
+      </Button>
     </form>
   );
 };

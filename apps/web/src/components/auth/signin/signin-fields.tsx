@@ -30,7 +30,7 @@ const SigninFields = ({
   return (
     <div className="space-y-3">
       <div
-        className={`h-[54px] ${
+        className={`${
           hasEmailError
             ? '[&_.shadow-xs]:border-danger-600 [&_.shadow-xs]:bg-danger-50 [&_.shadow-xs]:focus-within:border-danger-600 [&_.shadow-xs]:focus-within:ring-danger-600/50'
             : ''
@@ -41,6 +41,7 @@ const SigninFields = ({
           name="email"
           type="email"
           placeholder="이메일"
+          iconStyle="left"
           value={formData.email}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onInputChange('email', e.target.value)
@@ -50,9 +51,8 @@ const SigninFields = ({
           <Mail className={hasEmailError ? 'text-danger-600' : 'text-neutral-900'} />
         </InputIcon>
       </div>
-
       <div
-        className={`h-[54px] ${
+        className={` ${
           hasPasswordError
             ? '[&_.shadow-xs]:border-danger-600 [&_.shadow-xs]:bg-danger-50 [&_.shadow-xs]:focus-within:border-danger-600 [&_.shadow-xs]:focus-within:ring-danger-600/50'
             : ''
@@ -63,6 +63,7 @@ const SigninFields = ({
           name="password"
           type={showPassword ? 'text' : 'password'}
           placeholder="비밀번호"
+          iconStyle="both"
           value={formData.password}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onInputChange('password', e.target.value)

@@ -6,6 +6,7 @@ const productCardStyle = tv({
     content: 'flex h-full w-full items-center gap-2',
     infoBox: 'flex min-w-0 flex-1 flex-col',
     buttonBox: 'flex items-center justify-end gap-2',
+    button: 'h-8 px-3 bg-neutral-200 w-1/5 rounded-md',
   },
   variants: {
     loading: {

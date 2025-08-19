@@ -1,9 +1,7 @@
 import { tv } from 'tailwind-variants';
 
-import Thumbnail from '@/components/ui/thumbnail';
-
 const style = tv({
-  base: 'inline-block p-3 rounded-xl text-sm break-words',
+  base: 'inline-block p-3 rounded-xl text-sm break-words whitespace-pre-wrap',
   variants: {
     color: {
       secondary: 'bg-primary-50/70 text-primary-950 max-w-3/5',
@@ -28,15 +26,7 @@ interface ChatBubbleProps {
 }
 
 const ChatBubble = ({ color, content, type }: ChatBubbleProps) => {
-  return (
-    <div className={style({ color, type })}>
-      {type === 'image' ? (
-        <Thumbnail url={content} alt="이미지 메시지" className="h-auto w-full object-cover" />
-      ) : (
-        content
-      )}
-    </div>
-  );
+  return <div className={style({ color, type })}>{content}</div>;
 };
 
 export default ChatBubble;

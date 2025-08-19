@@ -6,7 +6,6 @@ import { X } from 'lucide-react';
 
 import { BidFormBottom, BidFormInput, ButtonDirectDeal } from '@/components/auction-detail';
 
-import useCountdown from '@/hooks/common/useCountdown';
 import { useBidMutation } from '@/hooks/mutations/bids';
 import { useAuctionDetail } from '@/hooks/queries/auction';
 
@@ -23,6 +22,7 @@ const BidForm = ({
   bidTableRef,
   seller,
   currentUserId,
+  isExpired,
 }: BidFormProps) => {
   const [isBidInputOpen, setIsBidInputOpen] = useState<boolean>(false);
   const [bidPrice, setBidPrice] = useState<number | null>(null);
@@ -31,23 +31,19 @@ const BidForm = ({
   const { data } = useAuctionDetail(auctionId);
   const minBidUnit = data?.data.auctionPrice?.minBidUnit || 1000;
 
-  // 입찰 뮤테이션
   const bidMutation = useBidMutation();
 
-  // 경매 종료 시간까지의 카운트다운
-  const { isExpired } = useCountdown(new Date(endTime));
-  //const directPrice = formatCurrencyWithUnit(currentPrice * 1.2); // 20% 증가한 가격
+  // 실시간으로 업데이트되는 현재 가격 사용
+  // React Query 캐시에서 최신 데이터를 가져오되, 없으면 props의 currentPrice 사용
+  const realtimeCurrentPrice = data?.data.auctionPrice?.currentPrice || currentPrice;
 
-  // 본인 경매인지 확인
-  const isOwnAuction = currentUserId && data?.data.sellerId === currentUserId;
+  const isOwnAuction = currentUserId === seller.id;
 
-  // 입찰 가격 변경 시 검증
   const handleBidPriceChange = (price: number | null) => {
     setBidPrice(price);
 
-    // 실시간 검증
     if (price !== null) {
-      const validation = validateBidPrice(price, currentPrice, minBidUnit);
+      const validation = validateBidPrice(price, realtimeCurrentPrice, minBidUnit);
       setValidationError(validation.isValid ? '' : validation.message);
     } else {
       setValidationError('');
@@ -57,7 +53,6 @@ const BidForm = ({
   const handleBidClick = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 경매가 종료된 경우 입찰 불가
     if (isExpired) {
       alert('경매가 종료되어 입찰할 수 없습니다.');
       return;
@@ -68,42 +63,29 @@ const BidForm = ({
       return;
     }
 
-    // 본인 경매 입찰 방지
-    if (isOwnAuction) {
-      alert('본인의 경매에는 입찰할 수 없습니다.');
-      return;
-    }
+    const finalBidPrice = bidPrice ?? realtimeCurrentPrice + minBidUnit;
 
-    // bidPrice가 null이면 기본값 사용
-    const finalBidPrice = bidPrice ?? currentPrice + minBidUnit;
-
-    // 클라이언트 검증
-    const validation = validateBidPrice(finalBidPrice, currentPrice, minBidUnit || 1000);
+    const validation = validateBidPrice(finalBidPrice, realtimeCurrentPrice, minBidUnit || 1000);
     if (!validation.isValid) {
       setValidationError(validation.message);
       return;
     }
 
     try {
-      // 현재 스크롤 위치 저장
       const currentScrollY = window.scrollY;
 
-      // 입찰 성공 시 상태 초기화
-      setValidationError(''); // 검증 에러 메시지 초기화
-      setBidPrice(null); // 입찰 가격 초기화
-      setIsBidInputOpen(false); // 입찰 성공 시 입찰 입력창 닫기
+      setValidationError('');
+      setBidPrice(null);
+      setIsBidInputOpen(false);
 
-      // API 호출
       await bidMutation.mutateAsync({
         auctionId,
         bidPrice: finalBidPrice,
       });
 
-      // 성공 시 에러 메시지 초기화
       setValidationError('');
       setBidPrice(null);
 
-      // 스크롤만 처리
       setTimeout(() => {
         window.scrollTo(0, currentScrollY);
         bidTableRef.current?.scrollIntoView({
@@ -124,30 +106,25 @@ const BidForm = ({
       <div
         className={cn(
           'pointer-events-none absolute inset-x-0 bottom-[98%] z-0 h-2/5',
-          'from-black/16 bg-gradient-to-t to-transparent',
+          'from-black/18 bg-gradient-to-t to-transparent',
           'duration-600 transition-all',
           !isBidInputOpen && 'h-6 opacity-30'
         )}
       />
-
       <div
-        className={cn('duration-600 relative z-20 rounded-t-sm bg-white px-5 pt-6 transition-all')}
+        className={cn('duration-600 relative z-20 rounded-t-sm bg-white px-5 pt-2 transition-all')}
       >
-        {/* 즉시거래 버튼 - 경매가 종료되지 않았고 즉시거래가 활성화된 경우에만 표시 */}
-        {!isExpired && data?.data.auctionPrice?.isInstantBuyEnabled && (
+        {!isExpired && data?.data.auctionPrice?.isInstantBuyEnabled && !isOwnAuction && (
           <ButtonDirectDeal
-            directPrice={formatCurrencyWithUnit(
-              data.data.auctionPrice.instantPrice || currentPrice * 1.2
-            )}
+            directPrice={formatCurrencyWithUnit(realtimeCurrentPrice * 1.2)}
             auctionId={auctionId}
             seller={seller}
             currentUserId={currentUserId}
           />
         )}
-
         <BidFormInput
           auctionId={auctionId}
-          currentPrice={currentPrice}
+          currentPrice={realtimeCurrentPrice}
           minUnit={minBidUnit}
           bidPrice={bidPrice}
           isBidInputOpen={isBidInputOpen}
@@ -162,14 +139,14 @@ const BidForm = ({
       >
         <X size={'30'} />
       </button>
-
       <BidFormBottom
         auctionId={auctionId}
-        currentPrice={currentPrice}
+        currentPrice={realtimeCurrentPrice}
         endTime={endTime}
         isExpired={isExpired}
         seller={seller}
         isValid={!validationError && bidPrice !== null}
+        isOwnAuction={isOwnAuction}
       />
     </form>
   );

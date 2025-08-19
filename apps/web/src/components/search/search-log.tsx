@@ -1,14 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-
 import { AlarmClock, X } from 'lucide-react';
 
 import { useSearchHistory } from '@/hooks/common/useSearchHistory';
 
+import { useSearchStore } from '@/lib/zustand/store/search-store';
+
 export const SearchLog = () => {
   const { history, removeSearchQuery, clearAllHistory, addSearchQuery } = useSearchHistory();
-  const router = useRouter();
+  const { setQuery, setShowResults } = useSearchStore();
 
   const handleDelete = (id: string) => {
     removeSearchQuery(id);
@@ -20,7 +20,8 @@ export const SearchLog = () => {
 
   const handleSearchItemClick = (query: string) => {
     addSearchQuery(query);
-    router.push(`/search?q=${encodeURIComponent(query)}`);
+    setQuery(query);
+    setShowResults(true);
   };
 
   return (

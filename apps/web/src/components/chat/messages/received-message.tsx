@@ -10,7 +10,6 @@ import { UserProfile } from '@/lib/types';
 import { formatTo12HourTime } from '@/lib/utils/chat';
 
 const ReceivedMessage = ({ message }: { message: Message }) => {
-  // TODO: 실시간 데이터 연동해서 상태값에 따라 bubble 달라질 수 있도록 수정하기
   const [isDone, setIsDone] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
@@ -30,7 +29,7 @@ const ReceivedMessage = ({ message }: { message: Message }) => {
 
   return (
     <div className="flex justify-start gap-2 py-2">
-      <ProfileImage src={profile?.profileImg ?? ''} alt="content" className="size-10" />
+      <ProfileImage src={profile?.profileImg ?? ''} alt="content" size={'medium'} />
       <ChatBubble type={type} color={color} content={message.content} />
       <p className="flex items-end text-xs font-light text-neutral-500">{time}</p>
     </div>

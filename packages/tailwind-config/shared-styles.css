@@ -17,12 +17,8 @@ h6 {
 /* tab 가로 스크롤 스타일 숨김 */
 .scrollbar-hide-x {
   overflow-x: auto;
-  /* 가로 스크롤 가능 */
   overflow-y: hidden;
-  /* 세로 스크롤 숨김 */
   white-space: nowrap;
-  /* 내용이 한 줄로 유지되도록 */
-
   -ms-overflow-style: none;
   /* IE and Edge */
   scrollbar-width: none;
@@ -31,26 +27,60 @@ h6 {
 
 .scrollbar-hide-y {
   overflow-y: auto;
-  /* 가로 스크롤 가능 */
   overflow-x: hidden;
-  /* 세로 스크롤 숨김 */
-
   -ms-overflow-style: none;
   /* IE and Edge */
   scrollbar-width: none;
   /* Firefox */
 }
 
-.scrollbar-hide-x::-webkit-scrollbar {
-  /* 웹킷 기반 브라우저에서 스크롤바 숨기기 */
+/* 웹킷 기반 브라우저에서 스크롤바 숨기기 */
+.scrollbar-hide-x::-webkit-scrollbar,
+.scrollbar-hide-y::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-.scrollbar-hide-y::-webkit-scrollbar {
-  /* 웹킷 기반 브라우저에서 스크롤바 숨기기 */
-  width: 0;
-  height: 0;
+.h-dvh {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.min-h-dvh {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.max-h-dvh {
+  max-height: 100vh;
+  max-height: 100dvh;
+}
+
+.min-h-fill {
+  min-height: -webkit-fill-available;
+  min-height: stretch;
+}
+
+.grid-main-nav {
+  grid-template-rows: 1fr auto;
+}
+
+.grid-header-main-nav {
+  grid-template-rows: auto 1fr auto;
+}
+
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+}
+
+.overscroll-contain {
+  overscroll-behavior: contain;
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 @theme {
@@ -59,36 +89,23 @@ h6 {
   --color-primary-100: #dde4ff;
   --color-primary-200: #c2ccfe;
   --color-primary-300: #9dabff;
-  --color-primary-400: #747dff;
   --color-primary-500: #5758fe;
   --color-primary-600: #4238f1;
   --color-primary-700: #372ecf;
-  --color-primary-800: #2e29a0;
   --color-primary-950: #16214a;
 
   /* Success Colors */
   --color-success-50: #f0fdfa;
-  --color-success-100: #cbfbf1;
-  --color-success-200: #96f7e4;
-  --color-success-300: #46ecd5;
-  --color-success-400: #00d5be;
   --color-success-500: #00bba7;
   --color-success-600: #008b7e;
-  --color-success-700: #00786f;
-  --color-success-800: #005f5a;
 
   /* Danger Colors */
   --color-danger-50: #fff2ef;
   --color-danger-70: #ffeff0;
   --color-danger-100: #ffe6e0;
-  --color-danger-200: #fed0c6;
-  --color-danger-300: #ffa197;
-  --color-danger-400: #ff765a;
   --color-danger-500: #ff4c00;
   --color-danger-600: #ec3300;
-  --color-danger-650: #e80039;
   --color-danger-700: #c73500;
-  --color-danger-800: #a52c00;
 
   /* Neutral Colors */
   --color-neutral-50: #fafafa;
@@ -102,22 +119,19 @@ h6 {
 
   /* Font Family */
   --font-heading:
-    var(--font-pretendard), 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
-    system-ui, sans-serif;
+    var(--font-pretendard), 'Pretendard Variable', Pretendard, system-ui, 'Apple SD Gothic Neo',
+    'Malgun Gothic', sans-serif;
   --font-body:
-    var(--font-pretendard), 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
-    system-ui, sans-serif;
+    var(--font-pretendard), 'Pretendard Variable', Pretendard, system-ui, 'Apple SD Gothic Neo',
+    'Malgun Gothic', sans-serif;
 
   /* Font Weights */
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  --font-weight-extrabold: 800;
 
   /* Font Sizes */
-  --text-h2: 2rem;
-  /* 32px */
   --text-h3: 1.5rem;
   /* 24px */
   --text-h4: 1.25rem;
@@ -158,13 +172,4 @@ h6 {
     0px -3px 7px 0px rgba(203, 195, 195, 0.1);
 
   --shadow-md: inset 0 60px 25px -17px rgba(0, 0, 0, 0.1);
-}
-.korean-calendar th:first-child {
-  color: rgb(239 68 68);
-  /* red-500 */
-}
-
-.korean-calendar th:last-child {
-  color: rgb(59 130 246);
-  /* blue-500 */
 }

@@ -1,35 +1,17 @@
 import Countdown from '@/components/auction-detail/countdown';
 import { Badge } from '@/components/ui/badge';
 
-import useCountdown from '@/hooks/common/useCountdown';
-
+import { ItemInformationProps } from '@/lib/types/auction';
 import { formatDate } from '@/lib/utils/date';
 
-interface ItemInformationProps {
-  item: Item;
-  id: string;
-}
-
-export interface Item {
-  title: string;
-  status: string;
-  endTime: string;
-  description: string;
-}
-
-const ItemSummary = ({ item, id }: ItemInformationProps) => {
+const ItemSummary = ({ item, id, countdown }: ItemInformationProps) => {
+  const { isExpired } = countdown;
   const deadline = formatDate(new Date(item.endTime));
-
-  // 실시간으로 경매 종료 여부 확인: UTC 원본으로 카운트다운
-  const { isExpired } = useCountdown(new Date(item.endTime));
-
-  // 실제 경매 상태 결정 (서버 상태 + 실시간 시간 비교)
   const actualStatus = isExpired ? '경매종료' : '경매중';
 
-  // Badge variant 결정
   const getBadgeVariant = () => {
-    if (isExpired) return 'closed'; // 경매 종료시 회색
-    return 'primary'; // 경매 진행중일 때 파란색
+    if (isExpired) return 'closed';
+    return 'primary';
   };
 
   return (
@@ -43,7 +25,7 @@ const ItemSummary = ({ item, id }: ItemInformationProps) => {
           <span className="text-sm font-medium text-neutral-900">마감시간</span>
           <time className="text-sm font-medium text-neutral-400">{deadline}</time>
         </div>
-        <Countdown date={new Date(item.endTime)} />
+        <Countdown countdown={countdown} />
       </div>
     </section>
   );

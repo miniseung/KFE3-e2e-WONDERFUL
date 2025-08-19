@@ -61,7 +61,7 @@ const NicknameInput = ({
     if (checkResult) {
       return checkResult.available ? 'text-success-500' : 'text-danger-500';
     }
-    return 'text-neutral-400';
+    return 'text-primary-500';
   };
 
   // 기존 닉네임과 동일한지 확인
@@ -71,8 +71,8 @@ const NicknameInput = ({
   const isCheckButtonDisabled = !value.trim() || isChecking;
 
   return (
-    <div className={`flex flex-col gap-2 ${className}`}>
-      <div className="flex gap-2">
+    <div className={className}>
+      <div className="flex">
         <div className="relative flex-1">
           <input
             type="text"
@@ -81,7 +81,7 @@ const NicknameInput = ({
             onChange={handleInputChange}
             placeholder={placeholder}
             maxLength={12}
-            className={`h-12 w-full rounded-md border px-4 pr-10 transition-colors ${
+            className={`h-12 w-full rounded-l-md border px-4 pr-10 transition-colors ${
               error
                 ? 'border-danger-500 focus:ring-danger-500/20'
                 : checkResult?.available
@@ -93,22 +93,20 @@ const NicknameInput = ({
           />
         </div>
 
-        {/* 중복확인 버튼 */}
         <button
           type="button"
           onClick={handleCheckClick}
           disabled={isCheckButtonDisabled}
-          className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+          className={`text-m rounded-r-md px-4 py-2 font-medium transition-colors ${
             isCheckButtonDisabled
               ? 'cursor-not-allowed bg-neutral-100 text-neutral-400'
-              : 'bg-primary-500 hover:bg-primary-600 focus:ring-primary-500/20 text-white focus:ring-2'
+              : 'focus:ring-primary-500/20 bg-neutral-800 text-white focus:ring-2 active:bg-neutral-800'
           } focus:outline-none`}
         >
           {isChecking ? '확인중...' : '중복확인'}
         </button>
       </div>
-      {/* 메시지 영역*/}
-      <p className={`min-h-[1.25rem] text-sm ${getMessageColor()}`}>
+      <p className={`m-2 min-h-[1.25rem] text-sm ${getMessageColor()}`}>
         {error ||
           (hasChecked && checkResult?.message) ||
           (hasChecked && isSameAsInitial ? '현재 닉네임과 동일합니다.' : '') ||

@@ -14,6 +14,7 @@ export interface TabItem {
 export interface FilterTabProps {
   filterKey: string;
   items: TabItem[];
+  className?: string;
 }
 // filter-store State
 export interface FilterState {

@@ -2,7 +2,7 @@ import { Container } from '@/components/layout';
 import { LocationList } from '@/components/personal-info';
 const Page = () => {
   return (
-    <Container className="px-4">
+    <Container noNav>
       <LocationList />
     </Container>
   );

@@ -13,7 +13,7 @@ const OtherProfilePage = () => {
       <div className="border-b-4 border-neutral-200 bg-white">
         <ProfileCard
           nickname="민돌멩이"
-          profileImg="https://autkdwezfwdduoqiadsc.supabase.co/storage/v1/object/public/auction-images/0bf0d884-38e1-4cf9-8663-5f65d0685233/1751631153830_jfii5z.jpeg"
+          profileImg="https://simjfysftupqszgxkosk.supabase.co/storage/v1/object/public/auction-images/0bf0d884-38e1-4cf9-8663-5f65d0685233/1751631153830_jfii5z.jpeg"
         >
           <ButtonChat />
         </ProfileCard>

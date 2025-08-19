@@ -4,44 +4,39 @@ import { redirect } from 'next/navigation';
 import { Pen } from 'lucide-react';
 
 import { MenuList, ProfileCard } from '@/components/common';
-import { LogoutButton } from '@/components/common/profile';
-import { Button } from '@/components/ui';
+import { ProfileShortcutMenu } from '@/components/common/profile';
+import { Container } from '@/components/layout';
+import ButtonSignOut from '@/components/user/button-sign-out';
 
 import { getMyProfile } from '@/lib/actions/profile';
 
-export const dynamic = 'force-dynamic';
+import defaultAvatar from '@/public/avatar-male.svg';
+
 const ProfilePage = async () => {
   const profile = await getMyProfile();
-  // 프로필이 없으면 (로그인하지 않았거나 에러) 로그인 페이지로 리다이렉트
   if (!profile) {
     redirect('/auth/signin?redirectTo=/profile');
   }
+
   return (
-    <main className={`h-full overflow-auto bg-white`}>
-      <div className="height-auto w-full bg-white">
-        {/* Profile Card */}
-        <div className="border-b-4 border-neutral-200">
-          <ProfileCard
-            nickname={profile.nickname || '사용자'}
-            profileImg={profile.profileImg || '/avatar-male.svg'}
-          >
-            <Link href="/profile/edit">
-              <Button variant="outline" size={'sm'}>
-                <Pen />
-                프로필수정
-              </Button>
-            </Link>
-          </ProfileCard>
-        </div>
-
-        {/* Menu List */}
-        <div className="mt-8 px-6">
-          <MenuList />
-        </div>
-
-        <LogoutButton />
-      </div>
-    </main>
+    <>
+      <Container className="[&>div]:border-1 bg-primary-50/30 space-y-2 px-4 [&>div]:rounded-sm [&>div]:border-neutral-100 [&>div]:shadow-[0px_1px_9px_0px_rgba(87,88,254,.11)]">
+        <ProfileCard
+          nickname={profile.nickname || ''}
+          profileImg={profile.profileImg || defaultAvatar}
+        >
+          <Link href="/profile/edit" className="flex h-10 items-center gap-2 text-sm">
+            <Pen size={16} />
+            프로필 수정
+          </Link>
+        </ProfileCard>
+        <ProfileShortcutMenu />
+        <MenuList />
+        <span className="mt-4 block w-full">
+          <ButtonSignOut />
+        </span>
+      </Container>
+    </>
   );
 };
 

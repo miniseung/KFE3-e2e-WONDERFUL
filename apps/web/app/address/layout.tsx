@@ -4,7 +4,9 @@ const AddressLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <AddressHeader />
-      <Container className="p-3">{children}</Container>
+      <Container className="p-3" noNav>
+        {children}
+      </Container>
     </>
   );
 };

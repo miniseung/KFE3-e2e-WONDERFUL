@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 
+import { ListX } from 'lucide-react';
+
 import AuctionCardSkeleton from '@/components/auction/auction-card-skeleton';
 import { FilterTab, AuctionCard } from '@/components/common';
 
@@ -22,11 +24,7 @@ const TAB_STATUS_MAP: Record<BasicTabId, AuctionStatus[]> = {
   completed: ['COMPLETED', 'CANCELLED'],
 };
 
-interface PurchasesListProps {
-  userId: string;
-}
-
-const PurchasesList = ({ userId }: PurchasesListProps) => {
+const PurchasesList = () => {
   const selectedTab = (useFilterStore((store) => store.selectedItems.trade) || 'all') as BasicTabId;
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -58,7 +56,7 @@ const PurchasesList = ({ userId }: PurchasesListProps) => {
       <div>
         <FilterTab filterKey="trade" items={AUCTION_TABS_BASIC} />
         <div className="flex flex-col gap-3">
-          {Array.from({ length: 6 }).map((_, index) => (
+          {Array.from({ length: 3 }).map((_, index) => (
             <AuctionCardSkeleton key={index} />
           ))}
         </div>
@@ -72,7 +70,7 @@ const PurchasesList = ({ userId }: PurchasesListProps) => {
         <FilterTab filterKey="trade" items={AUCTION_TABS_BASIC} />
         <div className="flex flex-col items-center justify-center gap-4 py-16">
           <div className="text-danger-600 text-lg">
-            구매 내역을 불러오는 중 오류가 발생했습니다.
+            입찰 내역을 불러오는 중 오류가 발생했습니다.
           </div>
           <button
             onClick={() => refetch()}
@@ -88,38 +86,29 @@ const PurchasesList = ({ userId }: PurchasesListProps) => {
   return (
     <div>
       <FilterTab filterKey="trade" items={AUCTION_TABS_BASIC} />
-
       <div className="flex flex-col gap-3">
         {allPurchases.length > 0 ? (
-          allPurchases.map((auction) => {
+          allPurchases.map((auction, idx) => {
             const auctionItemProps = convertToAuctionItemProps(auction);
-            return <AuctionCard key={auction.id} {...auctionItemProps} />;
+            return <AuctionCard key={auction.id} {...auctionItemProps} idx={idx} />;
           })
         ) : (
           <div className="flex flex-col items-center justify-center py-16">
             <div className="mb-2 text-neutral-400">
-              <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <ListX size={60} />
             </div>
-            <h3 className="mb-1 text-lg font-medium text-neutral-900">입찰한 경매가 없습니다</h3>
-            <p className="text-neutral-600">아직 입찰한 경매가 없습니다.</p>
+            <p className="text-neutral-600">입찰하신 경매가 없습니다.</p>
           </div>
         )}
       </div>
 
-      {/* 무한 스크롤 트리거 & 로딩 표시 */}
       <div ref={loadMoreRef} className="flex justify-center py-4">
         {isFetchingNextPage ? (
-          <div className="text-neutral-600">불러오는 중...</div>
+          <div className="text-neutral-600">잠시만 기다려주세요</div>
         ) : hasNextPage ? (
           <div className="text-neutral-400">스크롤해서 더 보기</div>
         ) : allPurchases.length > 0 ? (
-          <div className="text-neutral-400">마지막 게시글</div>
+          <div className="text-neutral-400">마지막 게시글입니다</div>
         ) : null}
       </div>
     </div>

@@ -1,15 +1,32 @@
-import { AuctionDetailResponse, AuctionListResponse } from '@/types/auction-prisma';
+import { AuctionDetailResponse, AuctionListResponse, SortOption } from '@/types/auction-prisma';
 
 import apiClient from './client';
 
-// 경매 목록 조회
+interface GetAuctionsParams {
+  locationName?: string;
+  category_id?: string;
+  sort?: SortOption;
+  includeCompleted?: boolean;
+}
+
+interface GetAuctionDetailParams {
+  userId?: string;
+}
+
+interface LocationResponse {
+  id: string;
+  locationName: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
 export const getAuctions = async (
   locationName?: string,
   category_id?: string,
-  sort?: string,
+  sort?: SortOption,
   includeCompleted?: boolean
 ): Promise<AuctionListResponse> => {
-  const params: Record<string, any> = {};
+  const params: Record<string, string> = {};
 
   if (locationName) {
     params.locationName = locationName;
@@ -27,28 +44,80 @@ export const getAuctions = async (
     params.includeCompleted = includeCompleted.toString();
   }
 
-  const response = await apiClient.get('/auctions', { params });
+  const response = await apiClient.get<AuctionListResponse>('/auctions', { params });
   return response.data;
 };
 
-// 경매 상세페이지 조회
 export const getAuctionDetail = async (
   id: string,
   userId?: string
 ): Promise<AuctionDetailResponse> => {
-  const params: Record<string, any> = {};
+  const params: Record<string, string> = {};
 
-  // 사용자 ID가 있다면, 찜 여부 확인용으로 전달
   if (userId) {
     params.userId = userId;
   }
 
-  const response = await apiClient.get(`/auctions/${id}`, { params });
+  const response = await apiClient.get<AuctionDetailResponse>(`/auctions/${id}`, { params });
   return response.data;
 };
 
-// 위치 정보 조회
-export const getLocationById = async (locationId: string): Promise<AuctionDetailResponse> => {
-  const response = await apiClient.get(`/locations/${locationId}`);
+export const getLocationById = async (locationId: string): Promise<LocationResponse> => {
+  const response = await apiClient.get<LocationResponse>(`/locations/${locationId}`);
   return response.data;
+};
+
+export const getAuctionsWithParams = async (
+  params: GetAuctionsParams
+): Promise<AuctionListResponse> => {
+  const queryParams: Record<string, string> = {};
+
+  if (params.locationName) {
+    queryParams.locationName = params.locationName;
+  }
+
+  if (params.category_id) {
+    queryParams.category_id = params.category_id;
+  }
+
+  if (params.sort) {
+    queryParams.sort = params.sort;
+  }
+  if (params.includeCompleted !== undefined && params.includeCompleted !== null) {
+    queryParams.includeCompleted = String(queryParams.includeCompleted);
+  }
+
+  const response = await apiClient.get<AuctionListResponse>('/auctions', {
+    params: queryParams,
+  });
+  return response.data;
+};
+
+export const getAuctionDetailWithParams = async (
+  id: string,
+  params?: GetAuctionDetailParams
+): Promise<AuctionDetailResponse> => {
+  const queryParams: Record<string, string> = {};
+
+  if (params?.userId) {
+    queryParams.userId = params.userId;
+  }
+
+  const response = await apiClient.get<AuctionDetailResponse>(`/auctions/${id}`, {
+    params: queryParams,
+  });
+  return response.data;
+};
+
+// 경매 상태를 업데이트하는 함수 (기존 updateAuctionStatus와 동일한 방식)
+export const updateExpiredAuctions = async (auctionId: string): Promise<{ success: boolean }> => {
+  try {
+    await apiClient.patch(`/auctions/${auctionId}/status`, {
+      status: 'COMPLETED',
+    });
+
+    return { success: true };
+  } catch {
+    throw new Error('경매 상태 업데이트에 실패했습니다.');
+  }
 };

@@ -25,8 +25,7 @@ export const getUserProfileFromDB = async (userId: string): Promise<UserProfile 
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt?.toISOString(),
     };
-  } catch (error) {
-    console.error('DB 프로필 조회 에러:', error);
+  } catch {
     throw new Error('프로필 조회 실패');
   }
 };

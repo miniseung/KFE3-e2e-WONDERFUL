@@ -20,8 +20,7 @@ export const getMyProfile = async () => {
     }
     return profile;
   } catch (error) {
-    console.error('내 프로필 조회 에러:', error);
-    return null;
+    throw new Error('프로필 조회 실패');
   }
 };
 

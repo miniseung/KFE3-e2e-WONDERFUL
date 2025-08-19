@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
+import AuctionItemCardSkeleton from '@/components/auction/auction-card-skeleton';
 import { AuctionCard, FilterTab } from '@/components/common';
 
 import { useSearch } from '@/hooks/queries/search';
@@ -13,21 +14,17 @@ import { TabId } from '@/lib/types/filter';
 import { SearchTabStatus } from '@/lib/types/search';
 import { convertToAuctionItemProps } from '@/lib/utils/auction';
 import { useFilterStore, useSortStore } from '@/lib/zustand/store';
+import { useSearchStore } from '@/lib/zustand/store/search-store';
 
-interface SearchResultsProps {
-  query: string;
-}
-
-const SearchResult = ({ query }: SearchResultsProps) => {
+const SearchResult = () => {
+  const { query } = useSearchStore();
   const selectedTab = (useFilterStore((store) => store.selectedItems.search) ?? 'all') as TabId;
   const sortOption = useSortStore((state) => state.sortOption);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // 탭 ID를 API 파라미터로 변환
   const statusParam =
     SEARCH_TAB_TO_STATUS_MAP[selectedTab as keyof typeof SEARCH_TAB_TO_STATUS_MAP] || 'all';
 
-  // 검색 API 호출
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
     useSearch(
       query,
@@ -38,10 +35,8 @@ const SearchResult = ({ query }: SearchResultsProps) => {
       !!query?.trim()
     );
 
-  // 모든 페이지의 데이터를 하나로 합치기
   const allAuctions = data?.pages.flatMap((page) => page.data) || [];
 
-  // Intersection Observer로 무한 스크롤 구현
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       const target = entries[0];
@@ -63,9 +58,18 @@ const SearchResult = ({ query }: SearchResultsProps) => {
   // 로딩 상태
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-lg text-neutral-600">검색 중...</div>
-      </div>
+      <>
+        <div className="my-3 flex gap-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="w-89 h-[35px] animate-pulse rounded bg-neutral-200" />
+          ))}
+        </div>
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <AuctionItemCardSkeleton key={index} />
+          ))}
+        </div>
+      </>
     );
   }
 
@@ -111,10 +115,9 @@ const SearchResult = ({ query }: SearchResultsProps) => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <FilterTab filterKey={'search'} items={AUCTION_TABS_BASIC} />
-      {/* 검색 결과 목록 */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col">
         {allAuctions.map((auction: AuctionListItem) => {
           const auctionItemProps = convertToAuctionItemProps(auction);
           return <AuctionCard key={auction.id} {...auctionItemProps} />;
@@ -124,14 +127,14 @@ const SearchResult = ({ query }: SearchResultsProps) => {
       {/* 무한 스크롤 트리거 & 로딩 표시 */}
       <div ref={loadMoreRef} className="flex justify-center py-4">
         {isFetchingNextPage ? (
-          <div className="text-neutral-600">불러오는 중...</div>
+          <div className="text-neutral-600">잠시만 기다려주세요</div>
         ) : hasNextPage ? (
           <div className="text-neutral-400">스크롤해서 더 보기</div>
         ) : allAuctions.length > 0 ? (
-          <div className="text-neutral-400">마지막 게시글</div>
+          <div className="text-neutral-400">마지막 게시글입니다</div>
         ) : null}
       </div>
-    </div>
+    </>
   );
 };
 

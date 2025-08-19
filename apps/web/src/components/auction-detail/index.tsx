@@ -17,3 +17,6 @@ export { default as BidFormInput } from './bid-form/input';
 export { default as ButtonDirectDeal } from './bid-form/button-direct-deal';
 export { default as BidFormBottom } from './bid-form/bottom';
 export { default as ButtonFavorite } from './bid-form/button-favorite';
+
+export { default as AuctionDetailContainer } from './container';
+export { default as Skeleton } from './skeleton';

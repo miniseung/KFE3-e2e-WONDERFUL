@@ -1,82 +1,59 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { InputPersonal } from '@/components/personal-info';
 import { Button } from '@/components/ui';
 import { Checkbox } from '@/components/ui/checkbox';
+import { createAccount } from '@/lib/actions/account';
 import type { CreateAccountRequest } from '@/lib/types/account';
 import { useToastStore } from '@/lib/zustand/store/toast-store';
-import { useCreateAccount } from '@/hooks/queries/accounts';
-
-interface AccountFormProps {
-  item: AccountFormItem;
-  onClick?: (data: CreateAccountRequest) => void;
-}
-
-interface AccountFormItem {
-  bank: string;
-  account: string;
-  name: string;
-}
-
-interface ValidationErrors {
-  [key: string]: string;
-}
+import { useQueryClient } from '@tanstack/react-query';
 
 const AccountForm = () => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const { showToast } = useToastStore();
-  const createAccount = useCreateAccount();
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<CreateAccountRequest>({
+    bankName: '',
+    accountNumber: '',
+    accountHolder: '',
+    isPrimary: false,
+  });
+
+  const handleInputChange = (field: keyof CreateAccountRequest, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCheckboxChange = (checked: boolean | string) => {
+    setFormData((prev) => ({ ...prev, isPrimary: checked === true }));
+  };
 
   const handleAccountSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    const accountData: CreateAccountRequest = {
-      bankName: formData.get('bankName') as string,
-      accountNumber: formData.get('accountNumber') as string,
-      accountHolder: formData.get('accountHolder') as string,
-      isPrimary: formData.get('isPrimary') === 'on' ? true : false,
-    };
-
-    // 유효성 검사 함수 -> zod처리 필요함 (추후)
-    const validateAccountData = (data: CreateAccountRequest): ValidationErrors => {
-      const errors: ValidationErrors = {};
-
-      if (!data.bankName?.trim()) {
-        errors.bankName = '은행명을 입력해주세요';
-      }
-
-      if (!data.accountNumber?.trim()) {
-        errors.accountNumber = '계좌번호를 입력해주세요';
-      } else if (!/^[\d-]+$/.test(data.accountNumber.replace(/\s/g, ''))) {
-        errors.accountNumber = '계좌번호는 숫자와 하이픈(-)만 입력 가능합니다';
-      }
-
-      if (!data.accountHolder?.trim()) {
-        errors.accountHolder = '예금주를 입력해주세요';
-      }
-
-      return errors;
-    };
-
-    // 유효성 검사 실행
-    const errors = validateAccountData(accountData);
-
-    if (Object.keys(errors).length > 0) {
-      const firstErrorKey = Object.keys(errors)[0];
-      const firstErrorMessage = errors[firstErrorKey!];
-
+    if (
+      !formData.bankName?.trim() ||
+      !formData.accountNumber?.trim() ||
+      !formData.accountHolder?.trim()
+    ) {
       showToast({
         status: 'error',
-        title: firstErrorMessage as string,
+        title: '모든 필드를 입력해주세요.',
         autoClose: true,
       });
       return;
     }
 
+    setIsLoading(true);
+
     try {
-      await createAccount.mutateAsync(accountData);
+      const result = await createAccount(formData);
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
 
       showToast({
         status: 'success',
@@ -84,14 +61,16 @@ const AccountForm = () => {
         autoClose: true,
       });
 
-      // 폼 초기화
-      form.reset();
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      router.push('/account');
     } catch (error) {
       showToast({
         status: 'error',
-        title: createAccount.error || '계좌 등록에 실패했습니다.',
+        title: error instanceof Error ? error.message : '계좌 등록에 실패했습니다.',
         autoClose: true,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -106,27 +85,37 @@ const AccountForm = () => {
           label="은행명"
           placeholder="사용하시는 은행명을 입력해주세요"
           type="text"
+          value={formData.bankName}
+          onChange={(e) => handleInputChange('bankName', e.target.value)}
         />
         <InputPersonal
           id="accountNumber"
           label="계좌"
           placeholder="입금받으실 계좌를 입력해주세요"
           type="number"
+          value={formData.accountNumber}
+          onChange={(e) => handleInputChange('accountNumber', e.target.value)}
         />
         <InputPersonal
           id="accountHolder"
           label="예금주"
           placeholder="계좌의 예금주를 정확히 입력해주세요"
           type="text"
+          value={formData.accountHolder}
+          onChange={(e) => handleInputChange('accountHolder', e.target.value)}
         />
       </div>
       <div className="flex w-full flex-col gap-4 pb-4">
         <div className="flex items-center gap-2">
-          <Checkbox id="isPrimary" name="isPrimary" />
+          <Checkbox
+            id="isPrimary"
+            checked={formData.isPrimary}
+            onCheckedChange={handleCheckboxChange}
+          />
           <label htmlFor="isPrimary">대표 계좌로 설정하기</label>
         </div>
-        <Button fullWidth disabled={createAccount.isLoading}>
-          {createAccount.isLoading ? '등록 중...' : '제출하기'}
+        <Button type="submit" fullWidth disabled={isLoading}>
+          {isLoading ? '등록 중...' : '제출하기'}
         </Button>
       </div>
     </form>

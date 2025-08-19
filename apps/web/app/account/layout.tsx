@@ -4,7 +4,9 @@ const AccountLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <AccountHeader />
-      <Container className="p-3">{children}</Container>
+      <Container className="p-3" noNav>
+        {children}
+      </Container>
     </>
   );
 };

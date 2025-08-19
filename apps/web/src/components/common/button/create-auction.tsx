@@ -28,15 +28,13 @@ const CreateAuctionButton = () => {
   };
 
   return (
-    <div className="absolute bottom-28 right-6 z-50">
-      <FloatButton
-        onClick={handleClick}
-        size="medium"
-        className="bg-indigo-500 text-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.2)]"
-      >
-        <Plus className="size-7" />
-      </FloatButton>
-    </div>
+    <FloatButton
+      onClick={handleClick}
+      size="medium"
+      className="absolute bottom-24 right-4 shadow-[0px_4px_8px_0px_rgba(0,0,0,0.2)]"
+    >
+      <Plus className="size-7" />
+    </FloatButton>
   );
 };
 

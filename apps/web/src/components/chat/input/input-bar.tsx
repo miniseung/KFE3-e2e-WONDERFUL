@@ -34,8 +34,8 @@ const InputBar = ({ roomId }: { roomId: string }) => {
         <div className="flex justify-around gap-2 px-4 pb-[15%] pt-2">
           <InputImage />
           <InputCamera />
-          <ButtonAddress />
-          <ButtonAccount />
+          <ButtonAddress roomId={roomId} />
+          <ButtonAccount roomId={roomId} />
         </div>
       )}
     </div>

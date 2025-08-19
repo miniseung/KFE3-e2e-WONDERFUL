@@ -1,6 +1,6 @@
-import AuctionList from '@/components/auction/auction-list';
-import { CreateAuctionButton } from '@/components/common';
-import { MainHeader } from '@/components/layout';
+import CategoriesFilter from '@/components/auction/categories-filter';
+import { AuctionItemList, CreateAuctionButton } from '@/components/common';
+import { MainHeader, Navigation } from '@/components/layout';
 import Container from '@/components/layout/container';
 
 const Page = () => {
@@ -8,9 +8,11 @@ const Page = () => {
     <>
       <MainHeader />
       <Container className="px-4">
-        <AuctionList />
-        <CreateAuctionButton />
+        <CategoriesFilter />
+        <AuctionItemList includeCompleted={false} />
       </Container>
+      <CreateAuctionButton />
+      <Navigation />
     </>
   );
 };
